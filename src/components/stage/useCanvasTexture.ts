@@ -25,7 +25,7 @@ export function useCanvasTexture(
     canvas.height = height;
     const texture = new THREE.CanvasTexture(canvas);
     texture.colorSpace = THREE.SRGBColorSpace;
-    texture.anisotropy = 8;
+    texture.anisotropy = 16; // plafonné automatiquement au maximum de la carte graphique
     texture.generateMipmaps = true;
     texture.minFilter = THREE.LinearMipmapLinearFilter;
     return { canvas, texture };
@@ -54,3 +54,9 @@ export function useCanvasTexture(
 
   return texture;
 }
+
+/**
+ * Teinte des écrans du décor (valeurs linéaires) : le blanc des textes reste juste sous le seuil
+ * du halo lumineux, pour des écritures nettes au lieu d'un contour flou.
+ */
+export const SCREEN_TINT: [number, number, number] = [0.74, 0.74, 0.74];

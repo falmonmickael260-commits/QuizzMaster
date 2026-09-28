@@ -2,7 +2,7 @@
 
 import { Environment, Lightformer, PerformanceMonitor } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
-import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
+import { Bloom, EffectComposer, SMAA, Vignette } from "@react-three/postprocessing";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 import type { PrivateState, PublicRoomState } from "@shared/types";
@@ -45,8 +45,14 @@ function FpsLimiter({ fps }: { fps: number }) {
 
 const FPS_LIMIT = typeof window !== "undefined" ? Number(new URLSearchParams(location.search).get("fps")) || 0 : 0;
 
+// Netteté : résolution native de l'écran (jusqu'à 2x sur Retina) tant que l'appareil suit,
+// abaissée par paliers si la fluidité baisse, puis passage en qualité légère en dernier recours.
+const MAX_DPR = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+
 export default function Stage({ state, priv, myId, quality, onQuality, onSelectTarget }: StageProps) {
   useTicker(250);
+  const [dpr, setDpr] = useState(() => (quality === "high" ? MAX_DPR : Math.min(MAX_DPR, 1.25)));
+  useEffect(() => setDpr(quality === "high" ? MAX_DPR : Math.min(MAX_DPR, 1.25)), [quality]);
   const me = state?.players.find((p) => p.id === myId) ?? null;
   const colors = useMemo(() => {
     const out: Record<string, string> = {};
@@ -62,9 +68,9 @@ export default function Stage({ state, priv, myId, quality, onQuality, onSelectT
   return (
     <Canvas
       className="stage-canvas"
-      dpr={quality === "high" ? [1, 1.5] : [1, 1]}
+      dpr={dpr}
       // en mode test (?fps=), on conserve le tampon pour que les captures d'écran automatiques soient fiables
-      gl={{ antialias: quality === "high", powerPreference: "high-performance", preserveDrawingBuffer: FPS_LIMIT > 0 }}
+      gl={{ antialias: true, powerPreference: "high-performance", preserveDrawingBuffer: FPS_LIMIT > 0 }}
       camera={{ position: [0, 9, 26], fov: 45, near: 0.1, far: 120 }}
       frameloop={FPS_LIMIT ? "demand" : "always"}
       onCreated={({ gl }) => {
@@ -75,7 +81,14 @@ export default function Stage({ state, priv, myId, quality, onQuality, onSelectT
       <color attach="background" args={["#03040b"]} />
       <fog attach="fog" args={["#03040b", 24, 55]} />
       {FPS_LIMIT > 0 && <FpsLimiter fps={FPS_LIMIT} />}
-      <PerformanceMonitor onDecline={() => onQuality?.("low")} />
+      <PerformanceMonitor
+        flipflops={4}
+        onIncline={() => setDpr((d) => Math.min(quality === "high" ? MAX_DPR : 1.25, d + 0.25))}
+        onDecline={() => {
+          if (dpr > 1) setDpr((d) => Math.max(1, d - 0.25));
+          else onQuality?.("low");
+        }}
+      />
       <Suspense fallback={null}>
         <Environment resolution={128} frames={1}>
           <Lightformer form="rect" intensity={2} color="#29e7ff" position={[-8, 5, 0]} scale={[4, 8, 1]} />
@@ -112,8 +125,11 @@ export default function Stage({ state, priv, myId, quality, onQuality, onSelectT
         {/* tampons 8 bits : une valeur invalide isolée (NaN) ne peut plus se propager à tout l'écran via le flou du bloom */}
         {quality === "high" && !DEBUG_FX.includes("nobloom") && (
           <EffectComposer multisampling={0} frameBufferType={THREE.UnsignedByteType}>
-            <Bloom mipmapBlur intensity={0.85} luminanceThreshold={0.55} luminanceSmoothing={0.2} radius={0.7} />
-            <Vignette eskil={false} offset={0.25} darkness={0.75} />
+            {/* seuil au-dessus de la luminosité des écrans : le halo reste sur les néons, pas sur les textes */}
+            <Bloom mipmapBlur intensity={1} luminanceThreshold={0.78} luminanceSmoothing={0.12} radius={0.7} />
+            <Vignette eskil={false} offset={0.25} darkness={0.7} />
+            {/* anti-crénelage : le passage par les effets désactive celui du navigateur */}
+            <SMAA />
           </EffectComposer>
         )}
       </Suspense>
