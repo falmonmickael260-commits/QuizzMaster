@@ -1,7 +1,8 @@
 -- BLIND QUIZZ — schéma Supabase
 -- Questions + statistiques, et historique des parties.
+-- Tous les objets sont préfixés « bq_ » pour cohabiter avec d'autres applications dans le même projet.
 
-create table if not exists public.questions (
+create table if not exists public.bq_questions (
   id text primary key,
   question text not null,
   category text not null,
@@ -22,34 +23,34 @@ create table if not exists public.questions (
   updated_at timestamptz not null default now()
 );
 
-create index if not exists questions_status_idx on public.questions (status);
-create index if not exists questions_category_idx on public.questions (category);
-create index if not exists questions_difficulty_idx on public.questions (difficulty);
+create index if not exists bq_questions_status_idx on public.bq_questions (status);
+create index if not exists bq_questions_category_idx on public.bq_questions (category);
+create index if not exists bq_questions_difficulty_idx on public.bq_questions (difficulty);
 
 -- Taux de réussite calculé (pour repérer les questions trop faciles / trop difficiles)
-create or replace view public.question_success as
+create or replace view public.bq_question_success with (security_invoker = true) as
   select id, category, difficulty, times_used, answers, correct,
          case when answers > 0 then round(correct::numeric / answers, 3) end as success_rate
-  from public.questions;
+  from public.bq_questions;
 
 -- Incréments atomiques appelés par le serveur de jeu
 create or replace function public.bq_record_usage(ids text[]) returns void
-language sql security definer as $$
-  update public.questions set times_used = times_used + 1 where id = any(ids);
+language sql security definer set search_path = public as $$
+  update public.bq_questions set times_used = times_used + 1 where id = any(ids);
 $$;
 
 create or replace function public.bq_record_answers(qid text, stats jsonb) returns void
-language plpgsql security definer as $$
+language plpgsql security definer set search_path = public as $$
 declare
   m text;
 begin
-  update public.questions set
+  update public.bq_questions set
     answers = answers + coalesce((stats->>'answers')::int, 0),
     correct = correct + coalesce((stats->>'correct')::int, 0),
     timeouts = timeouts + coalesce((stats->>'timeouts')::int, 0)
   where id = qid;
   for m in select jsonb_object_keys(coalesce(stats->'byMode', '{}'::jsonb)) loop
-    update public.questions set by_mode = jsonb_set(
+    update public.bq_questions set by_mode = jsonb_set(
       jsonb_set(by_mode, array[m, 'answers'], to_jsonb(coalesce((by_mode->m->>'answers')::int, 0) + (stats->'byMode'->m->>'answers')::int)),
       array[m, 'correct'], to_jsonb(coalesce((by_mode->m->>'correct')::int, 0) + (stats->'byMode'->m->>'correct')::int))
     where id = qid;
@@ -58,7 +59,7 @@ end;
 $$;
 
 -- Historique des parties (classements finaux)
-create table if not exists public.games (
+create table if not exists public.bq_games (
   id uuid primary key default gen_random_uuid(),
   room_code text not null,
   rounds smallint not null,
@@ -68,5 +69,11 @@ create table if not exists public.games (
 
 -- Sécurité : lecture/écriture réservées au serveur (clé service_role).
 -- Le navigateur n'accède jamais directement aux questions (sinon les bonnes réponses fuiteraient).
-alter table public.questions enable row level security;
-alter table public.games enable row level security;
+alter table public.bq_questions enable row level security;
+alter table public.bq_games enable row level security;
+
+-- Les fonctions d'incrément ne sont appelables que par le serveur (service_role).
+revoke execute on function public.bq_record_usage(text[]) from public, anon, authenticated;
+revoke execute on function public.bq_record_answers(text, jsonb) from public, anon, authenticated;
+grant execute on function public.bq_record_usage(text[]) to service_role;
+grant execute on function public.bq_record_answers(text, jsonb) to service_role;
