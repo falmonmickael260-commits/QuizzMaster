@@ -1,0 +1,23 @@
+import { build } from "./_builder";
+
+export default build("histoire", [
+  ["En quelle année a eu lieu la prise de la Bastille ?", "1789", ["1792", "1776", "1799"], "Le 14 juillet 1789, les Parisiens prennent la Bastille, symbole de l'arbitraire royal.", 1],
+  ["En quelle année le mur de Berlin est-il tombé ?", "1989", ["1991", "1987", "1985"], "Le mur tombe dans la nuit du 9 au 10 novembre 1989, après 28 ans d'existence.", 1],
+  ["Quel roi de France était surnommé « le Roi-Soleil » ?", "Louis XIV", ["Louis XVI", "François Ier", "Louis XIII"], "Louis XIV a régné 72 ans, le plus long règne de l'histoire de France.", 1, ["Louis 14"]],
+  ["Quelle bataille de 1815 marque la défaite définitive de Napoléon ?", "Waterloo", ["Austerlitz", "Iéna", "Leipzig"], "À Waterloo, en Belgique actuelle, Napoléon est battu par Wellington et Blücher le 18 juin 1815.", 1],
+  ["Quel empire était dirigé par Soliman le Magnifique ?", "L'Empire ottoman", ["L'Empire perse", "L'Empire moghol", "L'Empire byzantin"], "Sous Soliman (1520-1566), l'Empire ottoman atteint son apogée, jusqu'aux portes de Vienne.", 2, ["ottoman", "Empire ottoman"]],
+  ["En quelle année Christophe Colomb a-t-il atteint l'Amérique ?", "1492", ["1498", "1488", "1515"], "Le 12 octobre 1492, Colomb aborde une île des Bahamas en croyant atteindre les Indes.", 1],
+  ["Quelle civilisation a construit Machu Picchu ?", "Les Incas", ["Les Mayas", "Les Aztèques", "Les Olmèques"], "Machu Picchu a été construit au XVe siècle, probablement pour l'empereur inca Pachacutec.", 1, ["Inca", "Incas"]],
+  ["Combien de temps a duré la guerre de Cent Ans ?", "116 ans", ["100 ans", "99 ans", "124 ans"], "Piège classique : la guerre de Cent Ans a duré de 1337 à 1453, soit 116 ans.", 3, ["116"]],
+  ["Quel navire a coulé lors de son voyage inaugural en avril 1912 ?", "Le Titanic", ["Le Lusitania", "Le Britannic", "L'Olympic"], "Le Titanic heurte un iceberg dans la nuit du 14 au 15 avril 1912 ; plus de 1 500 personnes périssent.", 1, ["Titanic"]],
+  ["En quelle année les femmes ont-elles voté pour la première fois en France ?", "1945", ["1936", "1918", "1958"], "Le droit de vote est accordé en 1944 et les Françaises votent pour la première fois aux municipales d'avril 1945.", 2],
+  ["Quelle ville était la capitale de l'Empire byzantin ?", "Constantinople", ["Rome", "Athènes", "Antioche"], "Constantinople, l'actuelle Istanbul, tombe aux mains des Ottomans en 1453.", 2, ["Byzance", "Istanbul"]],
+  ["Quel pharaon a vu sa tombe découverte presque intacte en 1922 ?", "Toutânkhamon", ["Ramsès II", "Khéops", "Akhenaton"], "Howard Carter découvre la tombe de Toutânkhamon dans la Vallée des Rois, avec son masque d'or.", 1, ["Toutankhamon", "Tutankhamon", "Toutankhamun"]],
+  ["Quel événement déclenche la Première Guerre mondiale en 1914 ?", "L'assassinat de François-Ferdinand", ["L'invasion de la Pologne", "Le naufrage du Lusitania", "La révolution russe"], "L'archiduc François-Ferdinand est assassiné à Sarajevo le 28 juin 1914.", 2, ["assassinat de l'archiduc", "attentat de Sarajevo", "Francois-Ferdinand"]],
+  ["Quel mur a été construit en Angleterre par les Romains pour se protéger des Pictes ?", "Le mur d'Hadrien", ["Le mur d'Antonin", "Le mur de Trajan", "Le mur de Constantin"], "Construit à partir de 122 apr. J.-C., le mur d'Hadrien s'étendait sur environ 117 km.", 2, ["Hadrien"]],
+  ["En quelle année l'homme a-t-il marché sur la Lune pour la première fois ?", "1969", ["1967", "1971", "1965"], "Le 21 juillet 1969 (heure française), Neil Armstrong pose le pied sur la Lune lors de la mission Apollo 11.", 1],
+  ["Quel peuple a fondé la ville de Marseille vers 600 av. J.-C. ?", "Les Grecs", ["Les Romains", "Les Phéniciens", "Les Gaulois"], "Des marins grecs venus de Phocée fondent Massalia, la future Marseille.", 2, ["Grecs", "Phocéens", "Phoceens"]],
+  ["Quelle reine de France a été guillotinée en octobre 1793 ?", "Marie-Antoinette", ["Marie de Médicis", "Joséphine de Beauharnais", "Anne d'Autriche"], "Épouse de Louis XVI, Marie-Antoinette est exécutée le 16 octobre 1793.", 1, ["Marie Antoinette"]],
+  ["Quelle guerre a opposé le Nord et le Sud des États-Unis de 1861 à 1865 ?", "La guerre de Sécession", ["La guerre d'indépendance", "La guerre de 1812", "La guerre du Mexique"], "La victoire du Nord entraîne l'abolition de l'esclavage avec le 13e amendement.", 1, ["guerre de secession", "Secession", "guerre civile americaine"]],
+  ["Quel traité met fin à la Première Guerre mondiale avec l'Allemagne en 1919 ?", "Le traité de Versailles", ["Le traité de Paris", "Le traité de Rome", "Le traité de Vienne"], "Signé dans la galerie des Glaces le 28 juin 1919, cinq ans jour pour jour après l'attentat de Sarajevo.", 2, ["Versailles"]],
+]);
