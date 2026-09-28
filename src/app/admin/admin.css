@@ -1,0 +1,255 @@
+.admin {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  background: radial-gradient(ellipse at 20% 0%, #121a4a 0%, #03040b 55%);
+  padding: 24px 16px 60px;
+}
+
+.admin-wrap {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  gap: 16px;
+}
+
+.admin-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-head h1 {
+  margin: 0;
+  font-size: 34px;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.stat {
+  padding: 14px;
+}
+
+.stat b {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 30px;
+}
+
+.stat span {
+  color: var(--dim);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.toolbar {
+  padding: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.toolbar .input,
+.toolbar select {
+  width: auto;
+  flex: 1 1 160px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+select.input {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #8a93c7 50%), linear-gradient(135deg, #8a93c7 50%, transparent 50%);
+  background-position: calc(100% - 16px) 50%, calc(100% - 11px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 28px;
+}
+
+select.input option {
+  background: #0a0f2c;
+}
+
+.q-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 6px;
+}
+
+.q-table th {
+  text-align: left;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--dim);
+  padding: 4px 10px;
+  font-weight: 800;
+}
+
+.q-table td {
+  background: rgba(10, 15, 44, 0.75);
+  padding: 10px;
+  vertical-align: top;
+  font-size: 14px;
+}
+
+.q-table td:first-child {
+  border-radius: 12px 0 0 12px;
+}
+
+.q-table td:last-child {
+  border-radius: 0 12px 12px 0;
+}
+
+.q-text {
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.q-sub {
+  color: var(--dim);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.q-answer {
+  color: var(--green);
+  font-weight: 800;
+}
+
+.status-pill {
+  font-size: 11px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.status-published {
+  background: rgba(46, 229, 157, 0.15);
+  color: var(--green);
+}
+
+.status-draft {
+  background: rgba(255, 184, 0, 0.15);
+  color: var(--amber);
+}
+
+.status-disabled {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--dim);
+}
+
+.row-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.modal-back {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  z-index: 50;
+  overflow-y: auto;
+}
+
+.modal {
+  width: min(760px, 100%);
+  padding: 20px;
+  display: grid;
+  gap: 12px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+textarea.input {
+  resize: vertical;
+  min-height: 70px;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.preview-box {
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.preview-opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.preview-opts span {
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07);
+  font-weight: 700;
+}
+
+.preview-opts span.ok {
+  background: rgba(46, 229, 157, 0.2);
+  color: var(--green);
+}
+
+.rate-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  width: 80px;
+  margin-top: 4px;
+}
+
+.rate-bar i {
+  display: block;
+  height: 100%;
+}
+
+.pager {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 760px) {
+  .grid2,
+  .grid3 {
+    grid-template-columns: 1fr;
+  }
+  .hide-sm {
+    display: none;
+  }
+}
