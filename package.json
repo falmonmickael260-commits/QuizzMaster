@@ -12,7 +12,8 @@
     "questions:validate": "tsx scripts/validate-questions.ts",
     "questions:export": "tsx scripts/export-questions.ts",
     "supabase:seed": "tsx scripts/seed-supabase.ts",
-    "e2e": "tsx e2e/full-game.ts"
+    "e2e": "tsx e2e/full-game.ts",
+    "deploy:railway": "node scripts/deploy-railway.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",

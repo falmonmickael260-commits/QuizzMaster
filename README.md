@@ -142,7 +142,12 @@ Le serveur de jeu a besoin d'un hôte Node qui garde des WebSockets ouverts (Rai
 VPS…). Vercel n'exécute pas `server/index.ts` : l'interface s'affiche mais les parties restent sur
 « connexion perdue ».
 
-**Railway** (fichier `railway.json` fourni) : *New Project → Deploy from GitHub repo*, puis dans *Variables*
+**Railway depuis votre ordinateur** : `npm run deploy:railway`. Le script ouvre la connexion Railway dans le
+navigateur (vous vous connectez vous-même), crée le projet et le service `blind-quizz`, envoie les variables
+de `.env.local` (demande le mot de passe de la régie s'il manque), déploie et affiche l'adresse publique.
+Le relancer redéploie la version actuelle du code.
+
+**Railway depuis le site** (fichier `railway.json` fourni) : *New Project → Deploy from GitHub repo*, puis dans *Variables*
 `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PASSWORD`, et *Settings → Networking → Generate Domain*.
 Le build (`npm run build`) et le démarrage (`npm start`) sont automatiques ; `/api/health` sert de sonde.
 Le jeu complet (interface, parties, régie) est alors disponible sur l'adresse Railway.
