@@ -1,4 +1,4 @@
-// Charge la base initiale de questions dans Supabase (table public.questions).
+// Charge la base initiale de questions dans Supabase (table public.bq_questions).
 // Prérequis : migration supabase/migrations/001_blind_quizz.sql appliquée,
 // SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY définis.
 //
@@ -32,7 +32,7 @@ const rows = SEED_QUESTIONS.map((q) => ({
 let done = 0;
 for (let i = 0; i < rows.length; i += 200) {
   // ignoreDuplicates : ne remplace jamais une question déjà modifiée dans la régie
-  const { error } = await db.from("questions").upsert(rows.slice(i, i + 200), { onConflict: "id", ignoreDuplicates: true });
+  const { error } = await db.from("bq_questions").upsert(rows.slice(i, i + 200), { onConflict: "id", ignoreDuplicates: true });
   if (error) {
     console.error(error.message);
     process.exit(1);

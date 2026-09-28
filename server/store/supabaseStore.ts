@@ -73,7 +73,7 @@ export class SupabaseQuestionStore implements QuestionStore {
   }
 
   async init() {
-    const { error } = await this.db.from("questions").select("id", { count: "exact", head: true });
+    const { error } = await this.db.from("bq_questions").select("id", { count: "exact", head: true });
     if (error) throw new Error(`Supabase inaccessible : ${error.message}`);
   }
 
@@ -81,7 +81,7 @@ export class SupabaseQuestionStore implements QuestionStore {
     if (!force && this.cache && Date.now() - this.cache.at < 60_000) return this.cache.list;
     const out: Question[] = [];
     for (let from = 0; ; from += 1000) {
-      const { data, error } = await this.db.from("questions").select("*").range(from, from + 999);
+      const { data, error } = await this.db.from("bq_questions").select("*").range(from, from + 999);
       if (error) throw new Error(error.message);
       out.push(...(data as Row[]).map(rowToQuestion));
       if (!data || data.length < 1000) break;
@@ -95,7 +95,7 @@ export class SupabaseQuestionStore implements QuestionStore {
   }
 
   async get(id: string) {
-    const { data, error } = await this.db.from("questions").select("*").eq("id", id).maybeSingle();
+    const { data, error } = await this.db.from("bq_questions").select("*").eq("id", id).maybeSingle();
     if (error) throw new Error(error.message);
     return data ? rowToQuestion(data as Row) : null;
   }
@@ -103,7 +103,7 @@ export class SupabaseQuestionStore implements QuestionStore {
   async create(input: QuestionInput) {
     const row = inputToRow({ status: "draft", source: "admin", ...input });
     row.id = input.id ?? `${input.category}-${crypto.randomBytes(5).toString("hex")}`;
-    const { data, error } = await this.db.from("questions").insert(row).select("*").single();
+    const { data, error } = await this.db.from("bq_questions").insert(row).select("*").single();
     if (error) throw new Error(error.message);
     this.cache = null;
     return rowToQuestion(data as Row);
@@ -112,14 +112,14 @@ export class SupabaseQuestionStore implements QuestionStore {
   async update(id: string, patch: Partial<QuestionInput>) {
     const { id: _ignored, ...rest } = patch;
     const row = { ...inputToRow(rest), updated_at: new Date().toISOString() };
-    const { data, error } = await this.db.from("questions").update(row).eq("id", id).select("*").single();
+    const { data, error } = await this.db.from("bq_questions").update(row).eq("id", id).select("*").single();
     if (error) throw new Error(error.message);
     this.cache = null;
     return rowToQuestion(data as Row);
   }
 
   async remove(id: string) {
-    const { error } = await this.db.from("questions").delete().eq("id", id);
+    const { error } = await this.db.from("bq_questions").delete().eq("id", id);
     if (error) throw new Error(error.message);
     this.cache = null;
   }

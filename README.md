@@ -203,6 +203,9 @@ SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… npm run supabase:seed
 La clé `service_role` reste côté serveur ; la RLS est activée et aucune règle n'ouvre les questions au
 navigateur (sinon les bonnes réponses fuiteraient).
 
+Tous les objets sont préfixés `bq_` (`bq_questions`, `bq_games`, `bq_question_success`, `bq_record_*`) :
+le jeu peut donc partager un projet Supabase existant sans toucher aux autres tables.
+
 ## Tests
 
 ```bash
