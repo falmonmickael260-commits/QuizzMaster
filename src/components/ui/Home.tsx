@@ -12,6 +12,7 @@ const PROFILE_KEY = "bq-profile";
 export function Home() {
   const create = useGame((s) => s.create);
   const join = useGame((s) => s.join);
+  const startDemo = useGame((s) => s.startDemo);
   const status = useGame((s) => s.status);
   const [name, setName] = useState("");
   const [character, setCharacter] = useState(CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)].id);
@@ -27,7 +28,14 @@ export function Home() {
     } catch {
       /* ignore */
     }
-    const room = new URLSearchParams(location.search).get("room");
+    const params = new URLSearchParams(location.search);
+    // /?partie-test : lance directement une partie de démonstration regardable
+    if (params.has("partie-test")) {
+      const manches = Math.max(1, Math.min(6, Number(params.get("manches")) || 2));
+      startDemo(params.get("pseudo") || "Alex", params.get("perso") || "hugo", manches);
+      return;
+    }
+    const room = params.get("room");
     if (room) setCode(room.replace(/[^0-9]/g, "").slice(0, 4));
   }, []);
 
@@ -152,6 +160,20 @@ export function Home() {
           </div>
           <button className="btn primary" disabled={!valid || busy || status === "connecting"} onClick={onCreate} style={{ fontSize: 18 }}>
             🎬 Créer une émission
+          </button>
+          <button
+            className="btn ghost"
+            disabled={busy || status === "connecting"}
+            onClick={() => {
+              audio.unlock();
+              audio.select();
+              saveProfile();
+              setBusy(true);
+              startDemo(name.trim().length >= 2 ? name.trim() : "Alex", character, rounds);
+            }}
+            title="Vous + 3 candidats simulés, pilote automatique activé : regardez une vraie partie se dérouler"
+          >
+            ▶ Regarder une partie de démonstration
           </button>
           <div className="divider">OU REJOINDRE</div>
           <div className="row">

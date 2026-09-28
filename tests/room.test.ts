@@ -307,3 +307,41 @@ describe("Partie maximale — 30 questions", () => {
     room.dispose();
   });
 });
+
+describe("Partie de démonstration — candidats simulés", () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  it("les simulés et le pilote automatique jouent une manche complète, roue comprise", async () => {
+    const room = new Room("BQ-7777", makeSource().source, TIMINGS);
+    let last!: PublicRoomState;
+    room.onState = (s) => (last = s);
+    const alex = room.addPlayer("Alex", "hugo");
+    room.handle(alex.id, { t: "settings", rounds: 2 });
+    room.handle(alex.id, { t: "addBots", count: 3 });
+    expect(last.players.map((p) => p.name)).toEqual(["Alex", "Sarah", "Lucas", "Emma"]);
+    expect(last.players.filter((p) => p.bot)).toHaveLength(3);
+    expect(last.players.find((p) => p.isHost)?.name).toBe("Alex"); // un simulé n'est jamais hôte
+    room.handle(alex.id, { t: "autopilot", on: true });
+    await room.start(alex.id);
+    const modes = new Set<string>();
+    let answers = 0;
+    let wheelDone = false;
+    for (let i = 0; i < 4000 && last.phase !== "final"; i++) {
+      await vi.advanceTimersByTimeAsync(100);
+      if (last.phase === "reveal" && last.reveal) {
+        for (const r of Object.values(last.reveal.results)) {
+          if (r.mode) modes.add(r.mode);
+          if (r.answer) answers++;
+        }
+      }
+      if (last.phase === "wheel" && last.wheel?.stage === "result") wheelDone = true;
+    }
+    expect(last.phase).toBe("final");
+    expect(modes).toEqual(new Set(["2", "4", "solo"])); // les trois niveaux d'aide ont été joués
+    expect(answers).toBeGreaterThan(20);
+    expect(wheelDone).toBe(true); // la roue a été lancée et l'effet appliqué sans intervention humaine
+    expect(last.players.some((p) => p.score > 0)).toBe(true);
+    room.dispose();
+  });
+});

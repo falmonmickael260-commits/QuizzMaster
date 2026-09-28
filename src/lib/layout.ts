@@ -24,8 +24,8 @@ export const PANEL_POS = new THREE.Vector3(10.6, 4.4, -5.2);
 export const FACE_POINT = new THREE.Vector3(0, 0, 8.6);
 
 const ARC_RADIUS = 10.4;
-/** Ordre de remplissage : d'abord les places avant (les plus proches de la caméra), alternées gauche/droite. */
-const SEAT_ANGLES_DEG = [-54, 54, -41.5, 41.5, -29, 29, -16.5, 16.5];
+/** Ordre de remplissage : d'abord les places autour de l'animateur, puis vers l'extérieur, alternées gauche/droite. */
+const SEAT_ANGLES_DEG = [-16.5, 16.5, -29, 29, -41.5, 41.5, -54, 54];
 
 export interface Seat {
   index: number;
@@ -59,10 +59,11 @@ export function seatScreen(seat: number): THREE.Vector3 {
 }
 
 /** Point devant un siège, pour une caméra « JOUEUR ». */
-export function seatCamera(seat: number, distance = 3.6, height = 2.55): { pos: THREE.Vector3; target: THREE.Vector3 } {
+export function seatCamera(seat: number, distance = 5.6, height = 2.9): { pos: THREE.Vector3; target: THREE.Vector3 } {
+  // cadre de la tête jusqu'à la façade du pupitre (pseudo + score), voisins hors du premier plan
   const head = seatHead(seat);
-  const pos = local(seat, 0.35, height, -0.62 + distance);
-  return { pos, target: head.clone().add(new THREE.Vector3(0, -0.4, 0)) };
+  const pos = local(seat, 0.2, height, -0.62 + distance);
+  return { pos, target: head.clone().add(new THREE.Vector3(0, -1.2, 0)) };
 }
 
 export const PLAYER_COLORS = ["#29e7ff", "#ff2e63", "#ffb800", "#2ee59d", "#a66cff", "#ff7a1c", "#3a86ff", "#ff66c4"];

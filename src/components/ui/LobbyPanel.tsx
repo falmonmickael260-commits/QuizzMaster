@@ -11,6 +11,9 @@ export function LobbyPanel() {
   const start = useGame((s) => s.start);
   const setRounds = useGame((s) => s.setRounds);
   const toast = useGame((s) => s.toast);
+  const addBots = useGame((s) => s.addBots);
+  const removeBots = useGame((s) => s.removeBots);
+  const setAutopilot = useGame((s) => s.setAutopilot);
   const me = state.players.find((p) => p.id === playerId);
   const isHost = !!me?.isHost;
   const link = typeof location !== "undefined" ? `${location.origin}/?room=${state.code}` : "";
@@ -41,12 +44,27 @@ export function LobbyPanel() {
             <span style={{ flex: 1 }}>{p.name}</span>
             {p.isHost && <span className="badge">HÔTE</span>}
             {p.id === playerId && <span className="badge good">VOUS</span>}
+            {p.bot && <span className="badge">🤖 SIMULÉ</span>}
             {!p.connected && <span className="badge bad">ABSENT</span>}
           </div>
         ))}
       </div>
       {isHost ? (
         <div className="stack" style={{ gap: 10 }}>
+          <div className="row" style={{ flexWrap: "wrap", gap: 6 }}>
+            <button className="btn ghost small" disabled={state.players.length >= 8} onClick={() => addBots(3)}>
+              🤖 Ajouter 3 candidats simulés
+            </button>
+            {state.players.some((p) => p.bot) && (
+              <button className="btn ghost small" onClick={removeBots}>
+                Retirer les simulés
+              </button>
+            )}
+            <label className="row" style={{ gap: 6, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+              <input type="checkbox" checked={!!me?.autopilot} onChange={(e) => setAutopilot(e.target.checked)} />
+              Pilote automatique (je regarde)
+            </label>
+          </div>
           <div>
             <span className="label">Manches · {state.settings.rounds * QUESTIONS_PER_ROUND} questions</span>
             <div className="rounds">

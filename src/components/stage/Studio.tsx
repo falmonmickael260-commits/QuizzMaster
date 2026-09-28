@@ -10,6 +10,9 @@ import { HOST_POS, SCREEN_POS, SCREEN_SIZE, STAGE_CENTER } from "@/lib/layout";
 
 const CZ = STAGE_CENTER.z;
 
+/** Diagnostic : ?fx=norefl,nobloom désactive un effet pour isoler un problème de rendu. */
+export const DEBUG_FX = typeof window !== "undefined" ? new URLSearchParams(location.search).get("fx") ?? "" : "";
+
 /** Palette d'ambiance lumineuse par phase de jeu. */
 export const PHASE_LIGHTS: Record<Phase | "none", { a: string; b: string; energy: number }> = {
   none: { a: "#29e7ff", b: "#ff2e63", energy: 0.8 },
@@ -69,7 +72,7 @@ export function Studio({ phase, quality }: { phase: Phase | "none"; quality: "hi
       {/* sol principal réfléchissant */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
         <circleGeometry args={[30, 96]} />
-        {quality === "high" ? (
+        {quality === "high" && !DEBUG_FX.includes("norefl") ? (
           <MeshReflectorMaterial resolution={1024} blur={[400, 100]} mixBlur={1} mixStrength={3} roughness={0.75} depthScale={0.8} minDepthThreshold={0.4} maxDepthThreshold={1.4} color="#070a1c" metalness={0.6} mirror={0.6} />
         ) : (
           <meshStandardMaterial color="#070a1c" roughness={0.35} metalness={0.7} />
@@ -130,8 +133,8 @@ export function Studio({ phase, quality }: { phase: Phase | "none"; quality: "hi
       <directionalLight position={[-8, 6, 6]} intensity={0.5} color="#9fb4ff" />
       <pointLight ref={lightA} position={[-9, 6, 2]} intensity={60} distance={30} decay={1.6} color="#29e7ff" />
       <pointLight ref={lightB} position={[9, 6, 2]} intensity={60} distance={30} decay={1.6} color="#ff2e63" />
-      <spotLight position={[0, 11, 4]} angle={0.5} penumbra={0.7} intensity={140} distance={30} decay={1.5} color="#ffffff" />
-      <pointLight position={[0, 3, 4]} intensity={18} distance={14} decay={1.5} color="#ffe8d0" />
+      <spotLight position={[0, 11, 4]} angle={0.5} penumbra={0.7} intensity={80} distance={30} decay={1.5} color="#fff4ea" />
+      <pointLight position={[0, 3, 4]} intensity={7} distance={14} decay={1.5} color="#ffe8d0" />
 
       {/* poussières lumineuses dans les faisceaux */}
       <Sparkles count={quality === "high" ? 90 : 40} scale={[22, 9, 16]} position={[0, 5, -1]} size={3} speed={0.25} opacity={0.5} color="#bfe9ff" />

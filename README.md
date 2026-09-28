@@ -40,6 +40,20 @@ npm install
 npm run dev          # http://localhost:3000 — plateau, jeu temps réel et régie /admin sur le même port
 ```
 
+### Voir une partie tout de suite (partie de démonstration)
+
+Ouvrez **http://localhost:3000/?partie-test** : une émission démarre immédiatement avec **Alex** (vous, en pilote
+automatique) et trois candidats simulés, **Sarah**, **Lucas** et **Emma**. Ils réfléchissent, choisissent 2 / 4 / SOLO,
+répondent juste ou faux, oublient parfois de répondre, tournent la roue et choisissent leurs cibles : il suffit de regarder.
+
+- `?partie-test&manches=3` pour une émission plus longue (1 à 6 manches), `&pseudo=Léa&perso=nova` pour changer de candidat ;
+- depuis l'accueil : bouton **« ▶ Regarder une partie de démonstration »** ;
+- dans le lobby, l'hôte peut aussi **ajouter 3 candidats simulés** et activer **« Pilote automatique »** ; pendant la
+  partie, le badge « PILOTE AUTO · reprendre la main » de la console permet de rejouer soi-même.
+
+Les candidats simulés sont joués **par le serveur** et respectent exactement les mêmes règles que les humains
+(12 secondes, verrouillage, barème) : aucune triche possible côté navigateur.
+
 Production :
 
 ```bash
@@ -195,6 +209,8 @@ navigateur (sinon les bonnes réponses fuiteraient).
 npm test                    # moteur (manche complète, 2/4/SOLO, expiration, roue, bouclier, vol, partie de 30 questions…)
 npm run questions:validate  # contrôle qualité de la base de questions
 npm run dev & npm run e2e   # partie réelle : 2 navigateurs (ordinateur + smartphone) + 2 bots
+ROUNDS=6 npm run e2e        # la même chose sur une émission complète de 30 questions
+node e2e/watch-demo.mjs dossier 1920 1080 2   # regarde une partie de démonstration et capture l'écran
 ```
 
 Le test de bout en bout joue une vraie partie de 2 manches avec 4 candidats et vérifie : création de room,

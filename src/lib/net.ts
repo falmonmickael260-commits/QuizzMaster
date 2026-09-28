@@ -36,6 +36,11 @@ interface GameStore {
   target: (playerId: string) => void;
   restart: () => void;
   leave: () => void;
+  addBots: (count?: number) => void;
+  removeBots: () => void;
+  setAutopilot: (on: boolean) => void;
+  /** Partie de démonstration : crée la room, ajoute 3 candidats simulés, active le pilote automatique et lance. */
+  startDemo: (name: string, character: string, rounds: number) => void;
   toast: (text: string, tone?: Toast["tone"]) => void;
 }
 
@@ -44,6 +49,8 @@ let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 let pingTimer: ReturnType<typeof setInterval> | null = null;
 let toastSeq = 0;
 let pending: ClientMessage[] = [];
+/** Messages à envoyer dès que la room est créée (partie de démonstration). */
+let afterWelcome: ClientMessage[] = [];
 
 function loadSession(): Session | null {
   try {
@@ -102,6 +109,11 @@ export const useGame = create<GameStore>((set, get) => ({
           saveSession({ code: msg.state.code, token: msg.token });
           set({ playerId: msg.playerId, state: msg.state, priv: msg.private });
           syncUrl(msg.state.code);
+          if (afterWelcome.length) {
+            const queued = afterWelcome;
+            afterWelcome = [];
+            queued.forEach((m) => get().send(m));
+          }
           break;
         case "state":
           set({ state: msg.state });
@@ -159,6 +171,14 @@ export const useGame = create<GameStore>((set, get) => ({
   spin: () => get().send({ t: "spin" }),
   target: (playerId) => get().send({ t: "target", playerId }),
   restart: () => get().send({ t: "restart" }),
+  addBots: (count = 3) => get().send({ t: "addBots", count }),
+  removeBots: () => get().send({ t: "removeBots" }),
+  setAutopilot: (on) => get().send({ t: "autopilot", on }),
+  startDemo(name, character, rounds) {
+    saveSession(null);
+    afterWelcome = [{ t: "addBots", count: 3 }, { t: "autopilot", on: true }, { t: "start" }];
+    get().send({ t: "create", name, character, rounds });
+  },
   leave() {
     get().send({ t: "leave" });
     saveSession(null);
@@ -183,6 +203,7 @@ export function serverNow(): number {
 function syncUrl(code: string | null) {
   try {
     const url = new URL(location.href);
+    url.searchParams.delete("partie-test");
     if (code) url.searchParams.set("room", code);
     else url.searchParams.delete("room");
     history.replaceState(null, "", url.toString());

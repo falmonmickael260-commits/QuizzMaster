@@ -11,7 +11,7 @@ import { serverNow } from "@/lib/net";
 import { CameraDirector } from "./CameraDirector";
 import { CandidateSeat } from "./Podium";
 import { Audience, BigScreen, Confetti, Host, LivePanel, Wheel } from "./SetPieces";
-import { Studio } from "./Studio";
+import { DEBUG_FX, Studio } from "./Studio";
 
 export type Quality = "high" | "low";
 
@@ -63,7 +63,8 @@ export default function Stage({ state, priv, myId, quality, onQuality, onSelectT
     <Canvas
       className="stage-canvas"
       dpr={quality === "high" ? [1, 2] : [1, 1.5]}
-      gl={{ antialias: quality === "high", powerPreference: "high-performance" }}
+      // en mode test (?fps=), on conserve le tampon pour que les captures d'écran automatiques soient fiables
+      gl={{ antialias: quality === "high", powerPreference: "high-performance", preserveDrawingBuffer: FPS_LIMIT > 0 }}
       camera={{ position: [0, 9, 26], fov: 45, near: 0.1, far: 120 }}
       frameloop={FPS_LIMIT ? "demand" : "always"}
       onCreated={({ gl }) => {
@@ -90,6 +91,8 @@ export default function Stage({ state, priv, myId, quality, onQuality, onSelectT
         {SEATS.map((seat) => {
           const player = state?.players.find((p) => p.seat === seat.index) ?? null;
           const selectable = !!choosing && !!player && player.id !== myId;
+          // pendant l'émission, les places inoccupées disparaissent du plateau (elles ne bougent jamais)
+          if (!player && state && state.phase !== "lobby") return null;
           return (
             <CandidateSeat
               key={seat.index}
@@ -106,9 +109,10 @@ export default function Stage({ state, priv, myId, quality, onQuality, onSelectT
         })}
         <Confetti active={state?.phase === "final" && finalT > 2800} />
         <CameraDirector state={state} mySeat={me?.seat ?? null} />
-        {quality === "high" && (
-          <EffectComposer multisampling={0}>
-            <Bloom mipmapBlur intensity={0.85} luminanceThreshold={0.62} luminanceSmoothing={0.2} radius={0.7} />
+        {/* tampons 8 bits : une valeur invalide isolée (NaN) ne peut plus se propager à tout l'écran via le flou du bloom */}
+        {quality === "high" && !DEBUG_FX.includes("nobloom") && (
+          <EffectComposer multisampling={0} frameBufferType={THREE.UnsignedByteType}>
+            <Bloom mipmapBlur intensity={0.85} luminanceThreshold={0.55} luminanceSmoothing={0.2} radius={0.7} />
             <Vignette eskil={false} offset={0.25} darkness={0.75} />
           </EffectComposer>
         )}
