@@ -1,12 +1,11 @@
 // Contenu des écrans intégrés au plateau : grand écran, pupitres, panneau LED, roue, sol.
 
-import { MODE_LABELS, MODE_POINTS, QUESTIONS_PER_ROUND, type AnswerMode } from "@shared/config";
+import { MODE_LABELS, MODE_ORDER, MODE_POINTS, QUESTIONS_PER_ROUND, REVEAL_LOCK_MS, type AnswerMode } from "@shared/config";
 import { CATEGORY_BY_ID, DIFFICULTY_LABELS } from "@shared/categories";
 import type { PrivateState, PublicPlayer, PublicRoomState } from "@shared/types";
 import { WHEEL_SEGMENTS, WHEEL_TONE_COLORS } from "@shared/wheel";
 import { C, drawLogo, fitLine, fitText, font, fontsVersion, formatScore, glow, isTweening, noGlow, pill, rr, screenBackground, timerRing, tweenScore, type Ctx } from "./draw";
 
-const MODE_ORDER: AnswerMode[] = ["4", "2", "solo"];
 
 function catLabel(id: string) {
   const c = CATEGORY_BY_ID[id];
@@ -176,7 +175,7 @@ function drawRoundIntro(ctx: Ctx, w: number, h: number, s: PublicRoomState, t: n
   }
   ctx.fillStyle = C.dim;
   font(ctx, h * 0.034, "text", 700);
-  ctx.fillText("4 RÉPONSES = 50   ·   2 RÉPONSES = 100   ·   SOLO = 200", w / 2, h * 0.86);
+  ctx.fillText("2 RÉPONSES = 50   ·   4 RÉPONSES = 100   ·   SOLO = 200", w / 2, h * 0.86);
 }
 
 function drawQuestion(ctx: Ctx, w: number, h: number, s: PublicRoomState, now: number) {
@@ -201,8 +200,10 @@ function drawQuestion(ctx: Ctx, w: number, h: number, s: PublicRoomState, now: n
     pill(ctx, `${"★".repeat(q.difficulty)}${"☆".repeat(4 - q.difficulty)}  ${d.label.toUpperCase()}`, w / 2, h * 0.72, h * 0.036, d.color + "33", d.color, d.color);
     return;
   }
+  // chrono à zéro : verrouillage (la révélation suit)
+  if (now >= q.endsAt) return drawLock(ctx, w, h, now - q.endsAt);
   // texte de la question
-  const box = { x: w * 0.07, y: h * 0.17, w: w * 0.86, h: h * 0.48 };
+  const box = { x: w * 0.07, y: h * 0.16, w: w * 0.86, h: h * 0.42 };
   rr(ctx, box.x - w * 0.02, box.y - h * 0.02, box.w + w * 0.04, box.h + h * 0.04, h * 0.04);
   ctx.fillStyle = "#00000055";
   ctx.fill();
@@ -214,11 +215,25 @@ function drawQuestion(ctx: Ctx, w: number, h: number, s: PublicRoomState, now: n
   const remaining = Math.max(0, q.endsAt - now);
   const secs = Math.ceil(remaining / 1000);
   const total = q.endsAt - q.startsAt;
-  timerRing(ctx, w / 2, h * 0.815, h * 0.1, remaining / total, remaining > 0 ? String(secs) : "0", secs <= 3);
+  // chrono géant : pulsation à chaque seconde, rouge sur les 3 dernières
+  const frac = (remaining % 1000) / 1000;
+  const beat = 1 + Math.pow(frac, 6) * (secs <= 3 ? 0.14 : 0.06);
+  ctx.save();
+  ctx.translate(w / 2, h * 0.775);
+  ctx.scale(beat, beat);
+  timerRing(ctx, 0, 0, h * 0.15, remaining / total, String(secs), secs <= 3);
+  ctx.restore();
+  // barre de temps sur toute la largeur de l'écran
+  const barColor = secs <= 3 ? C.red : secs <= 6 ? C.amber : C.cyan;
+  ctx.fillStyle = "#ffffff18";
+  ctx.fillRect(0, h * 0.975, w, h * 0.025);
+  glow(ctx, barColor, 20);
+  ctx.fillStyle = barColor;
+  ctx.fillRect(0, h * 0.975, w * (remaining / total), h * 0.025);
+  noGlow(ctx);
   // barème
   MODE_ORDER.forEach((m, i) => {
-    const cx = w * (0.1 + i * 0.105);
-    pill(ctx, `${m === "solo" ? "SOLO" : m} = ${MODE_POINTS[m]}`, cx, h * 0.815, h * 0.03, MODE_LABELS[m].color + "30", C.white, MODE_LABELS[m].color);
+    pill(ctx, `${MODE_LABELS[m].name} = ${MODE_POINTS[m]}`, w * 0.16, h * (0.7 + i * 0.075), h * 0.028, MODE_LABELS[m].color + "30", C.white, MODE_LABELS[m].color);
   });
   // réponses
   const answered = s.players.filter((p) => p.answered).length;
@@ -226,15 +241,39 @@ function drawQuestion(ctx: Ctx, w: number, h: number, s: PublicRoomState, now: n
   ctx.textBaseline = "middle";
   ctx.fillStyle = answered === s.players.length ? C.green : C.white;
   font(ctx, h * 0.05, "display");
-  ctx.fillText(`${answered}/${s.players.length}`, w * 0.93, h * 0.79);
+  ctx.fillText(`${answered}/${s.players.length}`, w * 0.9, h * 0.76);
   ctx.fillStyle = C.dim;
   font(ctx, h * 0.026, "text", 700);
-  ctx.fillText("ONT RÉPONDU", w * 0.93, h * 0.85);
+  ctx.fillText("ONT RÉPONDU", w * 0.9, h * 0.82);
 }
 
-function drawReveal(ctx: Ctx, w: number, h: number, s: PublicRoomState, t: number) {
+const LOCK_MS = REVEAL_LOCK_MS;
+
+function drawLock(ctx: Ctx, w: number, h: number, t: number) {
+  const p = Math.min(1, t / 250);
+  ctx.save();
+  ctx.fillStyle = `rgba(255, 46, 99, ${0.25 * (1 - Math.min(1, t / 600))})`;
+  ctx.fillRect(0, 0, w, h);
+  ctx.translate(w / 2, h / 2);
+  ctx.scale(1.4 - 0.4 * p, 1.4 - 0.4 * p);
+  ctx.globalAlpha = p;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  timerRing(ctx, 0, -h * 0.2, h * 0.1, 0, "0", true);
+  glow(ctx, C.coral, 50);
+  ctx.fillStyle = C.white;
+  font(ctx, h * 0.11, "display");
+  ctx.fillText("🔒 LES RÉPONSES", 0, h * 0.02);
+  ctx.fillText("SONT VERROUILLÉES", 0, h * 0.15);
+  ctx.restore();
+  noGlow(ctx);
+}
+
+function drawReveal(ctx: Ctx, w: number, h: number, s: PublicRoomState, t0: number) {
   const q = s.question!;
   const r = s.reveal!;
+  if (t0 < LOCK_MS) return drawLock(ctx, w, h, t0 + 300);
+  const t = t0 - LOCK_MS;
   header(ctx, w, h, s, catLabel(q.category));
   fitText(ctx, q.text, { x: w * 0.08, y: h * 0.14, w: w * 0.84, h: h * 0.14 }, { max: h * 0.05, min: h * 0.03, weight: 700, color: "#c9d1ff" });
   const p = Math.min(1, t / 450);
@@ -462,7 +501,8 @@ function drawFinal(ctx: Ctx, w: number, h: number, s: PublicRoomState, t: number
 export function podiumFrontSig(p: PublicPlayer | null, s: PublicRoomState | null, now: number, color: string) {
   if (!p || !s) return `empty|${fontsVersion}`;
   const tick = isTweening(`pod-${p.id}`, now) ? Math.floor(now / 60) : s.phase === "wheel" && s.wheel?.stage === "choose_target" ? Math.floor(now / 250) : 0;
-  return [p.name, p.score, p.mode, p.answered, p.connected, s.phase, s.reveal?.questionIndex, p.lastResult?.questionIndex, p.modifiers.shield, p.modifiers.pointsMultiplier, tick, color, fontsVersion, s.wheel?.stage, s.wheel?.targetId].join("|");
+  const locked = s.phase === "reveal" && now - s.phaseStartedAt < REVEAL_LOCK_MS;
+  return [p.name, p.score, p.mode, p.answered, p.connected, s.phase, locked, s.reveal?.questionIndex, p.lastResult?.questionIndex, p.modifiers.shield, p.modifiers.pointsMultiplier, tick, color, fontsVersion, s.wheel?.stage, s.wheel?.targetId].join("|");
 }
 
 /** Face avant du pupitre (vue par le public et les caméras) : PSEUDO + SCORE + état. */
@@ -483,7 +523,8 @@ export function drawPodiumFront(ctx: Ctx, w: number, h: number, p: PublicPlayer 
   }
   let frame = color;
   const res = p.lastResult;
-  const revealing = s.phase === "reveal" && res && res.questionIndex === s.reveal?.questionIndex;
+  const locked = s.phase === "reveal" && now - s.phaseStartedAt < LOCK_MS;
+  const revealing = s.phase === "reveal" && !locked && res && res.questionIndex === s.reveal?.questionIndex;
   if (revealing) frame = res!.correct ? C.green : C.red;
   if (s.phase === "wheel" && s.wheel?.stage === "choose_target" && p.id !== s.wheel.spinnerId) frame = Math.floor(now / 250) % 2 ? C.coral : C.white;
   // cadre lumineux
@@ -499,7 +540,9 @@ export function drawPodiumFront(ctx: Ctx, w: number, h: number, p: PublicPlayer 
   ctx.fillStyle = p.connected ? C.white : C.dim;
   fitLine(ctx, p.name.toUpperCase(), w / 2, h * 0.27, w * 0.84, h * 0.24, "display");
   // score animé
-  const display = tweenScore(`pod-${p.id}`, p.score, now);
+  // pendant le verrouillage, le score n'a pas encore « bougé » à l'antenne
+  const shown = locked && res && res.questionIndex === s.reveal?.questionIndex ? p.score - res.points : p.score;
+  const display = tweenScore(`pod-${p.id}`, shown, now);
   ctx.fillStyle = color;
   glow(ctx, color, h * 0.08);
   fitLine(ctx, `${formatScore(display)} PTS`, w / 2, h * 0.58, w * 0.86, h * 0.26, "display");
@@ -518,6 +561,9 @@ export function drawPodiumFront(ctx: Ctx, w: number, h: number, p: PublicPlayer 
       status = "RÉFLÉCHIT…";
       statusColor = C.white;
     }
+  } else if (locked) {
+    status = "🔒 VERROUILLÉ";
+    statusColor = C.white;
   } else if (revealing) {
     status = res!.correct ? `BONNE RÉPONSE  +${res!.points}` : res!.timedOut ? "TEMPS ÉCOULÉ" : "MAUVAISE RÉPONSE";
     statusColor = res!.correct ? C.green : C.red;
@@ -639,7 +685,7 @@ export function drawPodiumTop(ctx: Ctx, w: number, h: number, p: PublicPlayer | 
 export function livePanelSig(s: PublicRoomState | null, now: number) {
   if (!s) return `n|${fontsVersion}`;
   const anim = s.ranking.some((r) => isTweening(`live-${r.playerId}`, now)) ? Math.floor(now / 80) : 0;
-  return [s.ranking.map((r) => `${r.playerId}:${r.score}:${r.rank}`).join(","), s.players.map((p) => p.name).join(","), anim, fontsVersion, Math.floor(now / 2000)].join("|");
+  return [s.phase === "reveal" && now - s.phaseStartedAt < REVEAL_LOCK_MS, s.ranking.map((r) => `${r.playerId}:${r.score}:${r.rank}`).join(","), s.players.map((p) => p.name).join(","), anim, fontsVersion, Math.floor(now / 2000)].join("|");
 }
 
 export function drawLivePanel(ctx: Ctx, w: number, h: number, s: PublicRoomState | null, now: number, colors: Record<string, string>) {
@@ -673,7 +719,8 @@ export function drawLivePanel(ctx: Ctx, w: number, h: number, s: PublicRoomState
     ctx.textAlign = "right";
     ctx.fillStyle = i === 0 ? C.amber : C.cyan;
     font(ctx, rowH * 0.42, "display");
-    ctx.fillText(formatScore(tweenScore(`live-${p.id}`, r.score, now)), w * 0.93, y + rowH * 0.43);
+    const pending = s.phase === "reveal" && now - s.phaseStartedAt < LOCK_MS ? p.lastResult?.points ?? 0 : 0;
+    ctx.fillText(formatScore(tweenScore(`live-${p.id}`, r.score - pending, now)), w * 0.93, y + rowH * 0.43);
     ctx.textAlign = "center";
   });
 }

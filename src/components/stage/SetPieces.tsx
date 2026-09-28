@@ -18,7 +18,7 @@ import { useCanvasTexture } from "./useCanvasTexture";
 // ─── Grand écran ─────────────────────────────────────────────────────────────
 
 export function BigScreen({ state }: { state: PublicRoomState | null }) {
-  const W = 1600;
+  const W = 1920;
   const H = Math.round((W * SCREEN_SIZE.h) / SCREEN_SIZE.w);
   const stateRef = useRef(state);
   stateRef.current = state;

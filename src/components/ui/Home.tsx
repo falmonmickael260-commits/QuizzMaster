@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CHARACTERS, getCharacter } from "@shared/characters";
-import { DEFAULT_ROUNDS, MAX_ROUNDS, MODE_LABELS, MODE_POINTS, QUESTIONS_PER_ROUND } from "@shared/config";
+import { DEFAULT_ROUNDS, MAX_ROUNDS, MODE_LABELS, MODE_ORDER, MODE_POINTS, QUESTIONS_PER_ROUND } from "@shared/config";
 import { useGame } from "@/lib/net";
 import { audio } from "@/lib/audio";
 import { CharacterPreview } from "./CharacterPreview";
@@ -78,9 +78,9 @@ export function Home() {
               peut tout renverser.
             </p>
             <div className="modes-legend">
-              {(["4", "2", "solo"] as const).map((m) => (
+              {MODE_ORDER.map((m) => (
                 <div key={m} className="mode-chip" style={{ borderColor: MODE_LABELS[m].color, background: MODE_LABELS[m].color + "18" }}>
-                  <b style={{ color: MODE_LABELS[m].color }}>{m === "solo" ? "SOLO" : `${m} RÉP.`}</b>
+                  <b style={{ color: MODE_LABELS[m].color }}>{MODE_LABELS[m].name}</b>
                   <small>
                     {MODE_POINTS[m]} pts · {MODE_LABELS[m].subtitle}
                   </small>

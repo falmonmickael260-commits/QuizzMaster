@@ -483,6 +483,82 @@ button {
   border-color: rgba(46, 229, 157, 0.6);
 }
 
+/* ─── Chrono d'antenne ─────────────────────────────────────────────── */
+
+.bc-timer {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 96px;
+  height: 96px;
+  z-index: 16;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.6));
+}
+
+.bc-timer svg {
+  position: absolute;
+  inset: 0;
+  transform-origin: center;
+}
+
+.bc-timer .track {
+  fill: rgba(4, 6, 20, 0.88);
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 8;
+}
+
+.bc-timer .bar {
+  fill: none;
+  stroke: var(--cyan);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  filter: drop-shadow(0 0 6px var(--cyan));
+}
+
+.bc-timer span {
+  position: relative;
+  font-size: 50px;
+  line-height: 1;
+  color: #fff;
+}
+
+.bc-timer.urgent .bar {
+  stroke: var(--red);
+  filter: drop-shadow(0 0 8px var(--red));
+}
+
+.bc-timer.urgent span {
+  color: var(--red);
+}
+
+.bc-timer em {
+  position: absolute;
+  bottom: -20px;
+  font-style: normal;
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--coral);
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .bc-timer {
+    top: 68px;
+    width: 74px;
+    height: 74px;
+  }
+  .bc-timer span {
+    font-size: 38px;
+  }
+}
+
 /* ─── Lobby ───────────────────────────────────────────────────────────── */
 
 .lobby-panel {
@@ -561,6 +637,14 @@ button {
   inset: 0;
   background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 4px);
   pointer-events: none;
+}
+
+.console-question {
+  font-weight: 800;
+  font-size: 16px;
+  line-height: 1.3;
+  margin: 0 0 10px;
+  color: #fff;
 }
 
 .console-head {

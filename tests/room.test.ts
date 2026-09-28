@@ -255,3 +255,55 @@ describe("Roue — effets et équilibrage", () => {
     t.room.dispose();
   });
 });
+
+describe("Partie maximale — 30 questions", () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  it("enchaîne 6 manches, 5 roues, puis la finale, sans éliminer personne", async () => {
+    const room = new Room("BQ-3030", makeSource().source, TIMINGS, seeded([0.05, 0.35, 0.65, 0.95, 0.2, 0.5, 0.8]));
+    let last!: PublicRoomState;
+    const priv = new Map<string, PrivateState>();
+    room.onState = (s) => (last = s);
+    room.onPrivate = (id, p) => priv.set(id, p);
+    const players = ["Alex", "Sarah", "Lucas", "Emma"].map((n) => room.addPlayer(n, "nova"));
+    room.handle(players[0].id, { t: "settings", rounds: 6 });
+    await room.start(players[0].id);
+    const questions = (room as unknown as { questions: Question[] }).questions;
+    expect(questions).toHaveLength(30);
+    expect(new Set(questions.map((q) => q.id)).size).toBe(30); // aucune question répétée
+
+    let wheels = 0;
+    const seenQuestions = new Set<number>();
+    for (let guard = 0; guard < 6000 && last.phase !== "final"; guard++) {
+      if (last.phase === "question" && last.question?.text && !seenQuestions.has(last.question.index)) {
+        const qi = last.question.index;
+        seenQuestions.add(qi);
+        // chaque joueur joue un mode différent ; Emma ne répond jamais
+        players.slice(0, 3).forEach((p, i) => {
+          const mode = (["2", "4", "solo"] as const)[(i + qi) % 3];
+          room.handle(p.id, { t: "mode", mode });
+          const value = mode === "solo" ? questions[qi].correctAnswer : priv.get(p.id)!.options[qi % priv.get(p.id)!.options.length];
+          room.handle(p.id, { t: "answer", value });
+        });
+      }
+      if (last.phase === "wheel" && last.wheel?.stage === "waiting_spin") {
+        wheels++;
+        room.handle(last.wheel.spinnerId, { t: "spin" });
+      }
+      if (last.phase === "wheel" && last.wheel?.stage === "choose_target") {
+        const target = last.players.find((p) => p.id !== last.wheel!.spinnerId)!;
+        room.handle(last.wheel.spinnerId, { t: "target", playerId: target.id });
+      }
+      await vi.advanceTimersByTimeAsync(250);
+    }
+    expect(last.phase).toBe("final");
+    expect(seenQuestions.size).toBe(30);
+    expect(last.questionNumber).toBe(30);
+    expect(wheels).toBe(5); // une roue après chaque manche sauf la dernière
+    expect(last.players).toHaveLength(4);
+    expect(last.players.every((p) => p.score >= 0)).toBe(true);
+    expect(last.ranking[0].score).toBe(Math.max(...last.players.map((p) => p.score)));
+    room.dispose();
+  });
+});

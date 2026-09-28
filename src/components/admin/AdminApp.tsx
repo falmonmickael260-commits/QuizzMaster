@@ -333,6 +333,10 @@ export default function AdminApp() {
                       <div>
                         {q.stats.timesUsed} partie{q.stats.timesUsed > 1 ? "s" : ""} · {q.stats.answers} rép.
                       </div>
+                      <div className="q-sub" style={{ marginTop: 2 }}>
+                        2 : {q.stats.byMode["2"].answers} · 4 : {q.stats.byMode["4"].answers} · SOLO : {q.stats.byMode.solo.answers}
+                        {q.stats.answers + q.stats.timeouts > 0 && <> · erreurs {Math.round(((q.stats.answers - q.stats.correct + q.stats.timeouts) / (q.stats.answers + q.stats.timeouts)) * 100)} %</>}
+                      </div>
                       {r !== null ? (
                         <>
                           <div style={{ fontWeight: 800, color: r > 0.85 ? "var(--amber)" : r < 0.2 ? "var(--red)" : "var(--green)" }}>
@@ -484,7 +488,7 @@ function Editor({ draft, busy, onCancel, onSave }: { draft: Draft; busy: boolean
         <div className="preview-box">
           <b>Aperçu des trois niveaux d&apos;aide</b>
           <div>
-            <span className="muted">4 RÉPONSES · 50 pts</span>
+            <span className="muted">4 RÉPONSES · 100 pts</span>
             <div className="preview-opts">
               <span className="ok">{d.correctAnswer || "?"}</span>
               {d.wrongAnswers.map((w, i) => (
@@ -493,7 +497,7 @@ function Editor({ draft, busy, onCancel, onSave }: { draft: Draft; busy: boolean
             </div>
           </div>
           <div>
-            <span className="muted">2 RÉPONSES · 100 pts</span>
+            <span className="muted">2 RÉPONSES · 50 pts</span>
             <div className="preview-opts">
               <span className="ok">{d.correctAnswer || "?"}</span>
               <span>{d.wrongAnswers[0] || "?"}</span>

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Phase } from "@shared/types";
+import { REVEAL_LOCK_MS } from "@shared/config";
 import { demoState } from "@/lib/demo";
 import { WHEEL_SEGMENTS } from "@shared/wheel";
 import { useGame } from "@/lib/net";
@@ -9,7 +10,7 @@ import { audio } from "@/lib/audio";
 import { markFontsLoaded, setFonts } from "@/lib/draw";
 import Stage, { type Quality } from "./stage/Stage";
 import { Home } from "./ui/Home";
-import { Hud, Toasts } from "./ui/Hud";
+import { BroadcastTimer, Hud, Toasts } from "./ui/Hud";
 import { LobbyPanel } from "./ui/LobbyPanel";
 import { Console } from "./ui/Console";
 import { WheelControls } from "./ui/WheelControls";
@@ -68,6 +69,7 @@ export default function Game() {
       {state && (
         <>
           <Hud quality={quality} onQuality={setQuality} />
+          <BroadcastTimer />
           {state.phase === "lobby" && <LobbyPanel />}
           {me && state.phase !== "lobby" && state.phase !== "final" && !(state.phase === "wheel" && state.wheel?.spinnerId === playerId && (state.wheel.stage === "waiting_spin" || state.wheel.stage === "choose_target")) && <Console />}
           {state.phase === "wheel" && <WheelControls />}
@@ -104,6 +106,7 @@ function useSoundDesign() {
   useEffect(() => {
     if (!state) {
       audio.music("none");
+      audio.ambience(0);
       prev.current = {};
       return;
     }
@@ -112,6 +115,8 @@ function useSoundDesign() {
     const stage = state.wheel?.stage;
     const me = state.players.find((x) => x.id === playerId);
     if (phase !== p.phase) {
+      // rumeur du public : forte entre les questions, presque éteinte pendant la réflexion
+      audio.ambience(phase === "question" ? 0.15 : phase === "final" || phase === "intro" ? 1 : 0.6);
       if (phase === "lobby") audio.music("lobby");
       if (phase === "intro") {
         audio.music("intro");
@@ -125,12 +130,17 @@ function useSoundDesign() {
       if (phase === "question") audio.music("suspense");
       if (phase === "reveal") {
         audio.music("none");
+        audio.lock();
+        // la bonne réponse apparaît après l'écran « réponses verrouillées »
         const r = state.reveal?.results[playerId ?? ""];
-        if (r?.correct) {
-          audio.correct(r.mode === "solo");
-          setTimeout(() => audio.points(), 500);
-        } else if (r) audio.wrong();
-        if (Object.values(state.reveal?.results ?? {}).some((x) => x.correct)) setTimeout(() => audio.applause(1.5), 300);
+        const anyCorrect = Object.values(state.reveal?.results ?? {}).some((x) => x.correct);
+        setTimeout(() => {
+          if (r?.correct) {
+            audio.correct(r.mode === "solo");
+            setTimeout(() => audio.points(), 500);
+          } else if (r) audio.wrong();
+          if (anyCorrect) setTimeout(() => audio.applause(1.5), 300);
+        }, REVEAL_LOCK_MS);
       }
       if (phase === "leaderboard") {
         audio.music("lobby");
@@ -175,7 +185,7 @@ function useSoundDesign() {
       const remain = Math.ceil((priv.deadline! - (Date.now() + offset)) / 1000);
       if (remain !== lastTick.current && remain >= 0 && remain <= 12) {
         lastTick.current = remain;
-        if (remain <= 5 && remain > 0) audio.tick(remain <= 3);
+        if (remain > 0) audio.tick(remain <= 3, 1 - (remain - 1) / 11);
       }
     }, 100);
     return () => clearInterval(id);

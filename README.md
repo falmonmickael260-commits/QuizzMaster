@@ -19,11 +19,16 @@ Choisir l'aide ne donne aucun temps supplémentaire.
 
 | Aide | Ce que voit le candidat | Points |
 |------|-------------------------|--------|
-| 🔴 **4** — « Je ne sais vraiment pas » | 4 propositions | **50** |
-| 🟠 **2** — « J'ai un doute » | la bonne réponse + la mauvaise la plus crédible | **100** |
-| 🟢 **SOLO** — « Je suis sûr de moi » | aucune proposition, on écrit la réponse | **200** |
+| 🟠 **2 RÉPONSES** — plus de sécurité | la bonne réponse + la mauvaise réponse la plus crédible | **50** |
+| 🔵 **4 RÉPONSES** — plus de possibilités | 4 propositions | **100** |
+| 🟢 **SOLO** — aucun filet de sécurité | aucune proposition, on écrit la réponse | **200** |
 
-Mauvaise réponse ou temps écoulé : 0 point, jamais de points négatifs.
+Mauvaise réponse ou temps écoulé : 0 point, jamais de points négatifs. À zéro, le grand écran, les pupitres et
+la console affichent **« LES RÉPONSES SONT VERROUILLÉES »** avant de révéler la bonne réponse.
+
+Le chrono est affiché en grand sur l'écran géant (anneau + barre pleine largeur), sur l'écran du pupitre et en
+habillage d'antenne en haut de l'image ; il bat à chaque seconde et passe au rouge sur les 3 dernières, avec un
+tic-tac qui monte en tension et un battement de cœur final.
 
 Une **manche** = 5 questions → classement animé → **roue bonus/malus** tournée par le meilleur de la manche.
 De 1 à 6 manches (5 à 30 questions), puis grande finale. **Personne n'est éliminé.**
@@ -50,13 +55,13 @@ Variables d'environnement : voir [`.env.example`](.env.example).
 2. **Créer une émission** → code `BQ-XXXX` + lien d'invitation. Les autres **rejoignent** avec le code.
 3. Chaque candidat apparaît sur **son pupitre** dans le décor ; l'hôte lance l'émission.
 4. Générique → annonce de manche → pour chaque question : l'animateur annonce, le **grand écran** affiche
-   la question et le chrono ; chacun choisit **4 / 2 / SOLO** sur l'écran de son pupitre et répond.
+   la question et le chrono ; chacun choisit **2 / 4 / SOLO** sur l'écran de son pupitre et répond.
 5. Révélation : bonne réponse, explication, réactions des personnages, scores qui défilent.
 6. Après 5 questions : classement animé puis **roue** ; si l'effet vise un adversaire, les candidats deviennent
    sélectionnables (clic sur le personnage ou sur son nom).
 7. Finale : classement final sur podium, confettis, animation du vainqueur, bouton « Rejouer ».
 
-Raccourcis clavier pendant une question : `1` `2` `3` pour l'aide, `A` `B` `C` `D` pour les propositions.
+Raccourcis clavier pendant une question : `1` (2 réponses) `2` (4 réponses) `3` (SOLO), `A` `B` `C` `D` pour les propositions.
 
 ## Le plateau
 
@@ -68,11 +73,11 @@ Raccourcis clavier pendant une question : `1` `2` `3` pour l'aide, `A` `B` `C` `
   déception, surprise, haussement d'épaules, applaudissements, victoire.
 - **Pupitres** : la façade affiche en permanence **PSEUDO + SCORE** (avec défilement animé du score) et l'état
   (réfléchit / mode choisi / verrouillé / bonne ou mauvaise réponse). Un écran incliné, orienté vers le candidat,
-  affiche son interface personnelle (chrono, 4/2/SOLO, propositions). Tous ces écrans sont des textures
+  affiche son interface personnelle (chrono, 2 / 4 / SOLO, propositions). Tous ces écrans sont des textures
   intégrées aux objets 3D, pas des fenêtres HTML flottantes.
 - **« CAM PUPITRE »** : en bas de l'écran, un gros plan de l'écran de votre pupitre sert d'interface tactile
   (indispensable sur smartphone pour taper une réponse SOLO). Le plateau reste toujours visible au-dessus.
-- **Réalisation automatique** : caméras PLATEAU, ANIMATEUR, QUESTION, JOUEUR, ROUE, CLASSEMENT et grue ;
+- **Réalisation automatique** : caméras PLATEAU, ANIMATEUR, QUESTION, CANDIDATS, JOUEUR, ROUE, CLASSEMENT et grue ;
   cadrage adapté aux écrans portrait.
 - **Habillage sonore synthétisé** (Web Audio) : génériques, musique de réflexion, tic-tac des 5 dernières
   secondes, sons de choix d'aide, bonne/mauvaise réponse, gain de points, roue (clic-clic-clic), bonus, malus,
@@ -170,7 +175,7 @@ Mot de passe : `ADMIN_PASSWORD` (« admin » par défaut en développement). Voi
 (catégorie, difficulté, statut), trier (taux de réussite, plus jouées…), modifier avec aperçu des trois
 niveaux d'aide, publier, désactiver, supprimer, ajouter, **importer** du JSON, et **générer** avec l'IA
 (« 50 questions de géographie niveau moyen ») : les questions générées arrivent en **brouillon** et doivent
-être relues avant publication. Les statistiques signalent les questions trop faciles ou trop dures (≥ 10 réponses).
+être relues avant publication. Statistiques par question : nombre de parties, réponses en mode 2 / 4 / SOLO, taux de réussite et d'erreur ; les questions trop faciles ou trop dures sont signalées (≥ 10 réponses).
 
 ### Supabase
 
@@ -187,13 +192,13 @@ navigateur (sinon les bonnes réponses fuiteraient).
 ## Tests
 
 ```bash
-npm test                    # moteur (manche complète, 4/2/SOLO, expiration, roue, bouclier, vol, finale…)
+npm test                    # moteur (manche complète, 2/4/SOLO, expiration, roue, bouclier, vol, partie de 30 questions…)
 npm run questions:validate  # contrôle qualité de la base de questions
 npm run dev & npm run e2e   # partie réelle : 2 navigateurs (ordinateur + smartphone) + 2 bots
 ```
 
 Le test de bout en bout joue une vraie partie de 2 manches avec 4 candidats et vérifie : création de room,
-arrivée sur le plateau, modes 4 / 2 / SOLO, bonnes et mauvaises réponses, saisie SOLO sans accents ni majuscules,
+arrivée sur le plateau, modes 2 / 4 / SOLO, bonnes et mauvaises réponses, saisie SOLO sans accents ni majuscules,
 expiration des 12 secondes, calcul des points, synchronisation des scores entre joueurs, pupitres fixes,
 classement, roue lancée par le gagnant, choix d'une cible, effet appliqué, nouvelle manche, finale.
 Des captures de chaque étape sont écrites dans `e2e/screenshots/`.

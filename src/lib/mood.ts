@@ -1,3 +1,4 @@
+import { REVEAL_LOCK_MS } from "@shared/config";
 import * as THREE from "three";
 import type { Mood } from "@/components/stage/Character";
 import type { PublicPlayer, PublicRoomState } from "@shared/types";
@@ -32,10 +33,11 @@ export function candidateMood(p: PublicPlayer, s: PublicRoomState, now: number):
     case "reveal": {
       const r = s.reveal?.results[p.id];
       if (!r) return { mood: "idle", look: HOST_LOOK };
-      if (t < 500) return { mood: "focused", look: HOST_LOOK };
-      if (r.correct) return { mood: r.mode === "solo" ? "ecstatic" : "happy", look: t < 3500 ? CAMERA_LOOK : HOST_LOOK };
+      if (t < REVEAL_LOCK_MS + 300) return { mood: "focused", look: BIG_SCREEN_LOOK };
+      const tr = t - REVEAL_LOCK_MS;
+      if (r.correct) return { mood: r.mode === "solo" ? "ecstatic" : "happy", look: tr < 3500 ? CAMERA_LOOK : HOST_LOOK };
       if (r.timedOut) return { mood: "shrug", look: CAMERA_LOOK };
-      return { mood: t < 2500 ? "shocked" : "sad", look: SCREEN_LOOK };
+      return { mood: tr < 2500 ? "shocked" : "sad", look: SCREEN_LOOK };
     }
     case "leaderboard": {
       const rank = s.ranking.find((r) => r.playerId === p.id);
@@ -85,7 +87,7 @@ export function hostMood(s: PublicRoomState | null, now: number): { mood: Mood; 
       if (!s.question?.text) return { mood: "talk", look: CAMERA_LOOK };
       return { mood: t < s.question.startsAt - s.phaseStartedAt + 1500 ? "point" : "idle", look: BIG_SCREEN_LOOK };
     case "reveal":
-      return { mood: t < 2000 ? "point" : "talk", look: t < 2000 ? BIG_SCREEN_LOOK : CAMERA_LOOK };
+      return { mood: t < REVEAL_LOCK_MS + 2000 ? "point" : "talk", look: t < REVEAL_LOCK_MS + 2000 ? BIG_SCREEN_LOOK : CAMERA_LOOK };
     case "leaderboard":
       return { mood: "present", look: CAMERA_LOOK };
     case "wheel":

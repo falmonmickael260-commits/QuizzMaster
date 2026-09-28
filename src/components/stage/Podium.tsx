@@ -32,16 +32,16 @@ interface Props {
 export function CandidateSeat({ seat, player, state, priv, color, isMe, selectable, onSelect }: Props) {
   const s = SEATS[seat];
   const frontTex = useCanvasTexture(
-    640,
-    320,
+    800,
+    400,
     (now) => podiumFrontSig(player, state, now, color) + (isMe ? "m" : ""),
-    (ctx, now) => drawPodiumFront(ctx, 640, 320, player, state, now, color, isMe),
+    (ctx, now) => drawPodiumFront(ctx, 800, 400, player, state, now, color, isMe),
   );
   const topTex = useCanvasTexture(
-    512,
-    300,
+    640,
+    376,
     (now) => podiumTopSig(player, state, isMe ? priv : null, now),
-    (ctx, now) => drawPodiumTop(ctx, 512, 300, player, state, isMe ? priv : null, now),
+    (ctx, now) => drawPodiumTop(ctx, 640, 376, player, state, isMe ? priv : null, now),
   );
   const ledMat = useMemo(() => new THREE.MeshBasicMaterial({ color, toneMapped: false }), [color]);
   const ring = useRef<THREE.Mesh>(null);

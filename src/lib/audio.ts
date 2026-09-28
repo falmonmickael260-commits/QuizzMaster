@@ -77,8 +77,15 @@ class AudioEngine {
 
   // ─── Effets ────────────────────────────────────────────────────────────────
 
-  tick(urgent = false) {
-    this.tone(urgent ? 1400 : 1000, 0.05, { type: "square", gain: urgent ? 0.12 : 0.06 });
+  /** Tic-tac du chrono : intensity de 0 (12 s restantes) à 1 (dernière seconde). */
+  tick(urgent = false, intensity = 1) {
+    this.tone(urgent ? 1400 : 900 + intensity * 300, 0.05, { type: "square", gain: urgent ? 0.13 : 0.025 + intensity * 0.05 });
+    if (urgent) {
+      // battement de cœur sous les 3 dernières secondes
+      const t = this.ctx?.currentTime ?? 0;
+      this.tone(70, 0.12, { type: "sine", gain: 0.35, at: t });
+      this.tone(62, 0.14, { type: "sine", gain: 0.3, at: t + 0.16 });
+    }
   }
   select() {
     this.tone(660, 0.08, { type: "triangle", gain: 0.25 });
@@ -142,6 +149,39 @@ class AudioEngine {
     if (!this.ctx) return;
     const t = this.ctx.currentTime;
     for (let i = 0; i < dur * 30; i++) this.noise(0.04, { gain: 0.03 + Math.random() * 0.05, filter: 1500 + Math.random() * 2500, at: t + i / 30 + Math.random() * 0.02 });
+  }
+
+  // ─── Ambiance plateau (rumeur du public) ──────────────────────────────────
+
+  private crowd: { src: AudioBufferSourceNode; gain: GainNode } | null = null;
+
+  /** Rumeur continue du public ; level 0 = silence, 1 = plateau animé. */
+  ambience(level: number) {
+    if (!this.ctx || !this.master) return;
+    if (!this.crowd) {
+      const len = this.ctx.sampleRate * 3;
+      const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      let last = 0;
+      for (let i = 0; i < len; i++) {
+        // bruit brun modulé : ressemble à un murmure lointain
+        last = (last + (Math.random() * 2 - 1) * 0.02) / 1.02;
+        d[i] = last * 3.5 * (0.7 + 0.3 * Math.sin((i / len) * Math.PI * 14));
+      }
+      const src = this.ctx.createBufferSource();
+      src.buffer = buf;
+      src.loop = true;
+      const f = this.ctx.createBiquadFilter();
+      f.type = "bandpass";
+      f.frequency.value = 520;
+      f.Q.value = 0.6;
+      const gain = this.ctx.createGain();
+      gain.gain.value = 0;
+      src.connect(f).connect(gain).connect(this.master);
+      src.start();
+      this.crowd = { src, gain };
+    }
+    this.crowd.gain.gain.setTargetAtTime(0.18 * level, this.ctx.currentTime, 0.6);
   }
 
   // ─── Musique ───────────────────────────────────────────────────────────────

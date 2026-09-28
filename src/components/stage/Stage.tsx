@@ -62,7 +62,7 @@ export default function Stage({ state, priv, myId, quality, onQuality, onSelectT
   return (
     <Canvas
       className="stage-canvas"
-      dpr={quality === "high" ? [1, 1.75] : [0.8, 1.2]}
+      dpr={quality === "high" ? [1, 2] : [1, 1.5]}
       gl={{ antialias: quality === "high", powerPreference: "high-performance" }}
       camera={{ position: [0, 9, 26], fov: 45, near: 0.1, far: 120 }}
       frameloop={FPS_LIMIT ? "demand" : "always"}

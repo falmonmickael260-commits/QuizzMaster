@@ -92,7 +92,10 @@ class Bot {
 // ─── Aides navigateur ────────────────────────────────────────────────────────
 
 async function getState(page: Page): Promise<PublicRoomState | null> {
-  return page.evaluate(() => (window as unknown as { __BQ: { getState: () => { state: PublicRoomState | null } } }).__BQ.getState().state);
+  // tolérant aux rechargements de page (la session est reprise automatiquement)
+  return page
+    .evaluate(() => (window as unknown as { __BQ?: { getState: () => { state: PublicRoomState | null } } }).__BQ?.getState().state ?? null)
+    .catch(() => null);
 }
 async function getMyId(page: Page): Promise<string | null> {
   return page.evaluate(() => (window as unknown as { __BQ: { getState: () => { playerId: string | null } } }).__BQ.getState().playerId);
@@ -119,7 +122,7 @@ type Plan = { mode: "4" | "2" | "solo" | null; correct: boolean };
 async function playInBrowser(page: Page, plan: Plan, s: PublicRoomState) {
   if (!plan.mode) return;
   const seed = answers.get(s.question!.text)!;
-  const idx = { "4": 0, "2": 1, solo: 2 }[plan.mode];
+  const idx = { "2": 0, "4": 1, solo: 2 }[plan.mode]; // ordre des boutons : 2 · 4 · SOLO
   await page.locator(".mode-btn").nth(idx).click({ timeout: 8000, force: true });
   if (plan.mode === "solo") {
     const input = page.locator(".solo-form input");
@@ -170,8 +173,8 @@ async function main() {
   await B.locator(".char-btn").nth(6).click({ force: true });
   await B.click("text=Rejoindre le plateau", { force: true });
   const botPlans: Record<string, (qi: number) => Plan> = {
-    Lucas: () => ({ mode: "4", correct: Math.random() < 0.5 }),
-    Emma: (qi) => (qi < 2 ? { mode: null, correct: false } : { mode: "4", correct: Math.random() < 0.5 }),
+    Lucas: () => ({ mode: "2", correct: Math.random() < 0.5 }),
+    Emma: (qi) => (qi < 2 ? { mode: null, correct: false } : { mode: "2", correct: Math.random() < 0.5 }),
   };
   const bots = [new Bot("Lucas", code, botPlans.Lucas), new Bot("Emma", code, botPlans.Emma)];
   const full = await waitFor(A, (s) => s.players.length === 4, "4 candidats");
@@ -198,7 +201,7 @@ async function main() {
     { mode: "2", correct: true },
     { mode: "4", correct: false },
     { mode: null, correct: false }, // laisse expirer les 12 s
-    { mode: "solo", correct: false },
+    { mode: "solo", correct: true }, // Alex remporte la manche (450 pts) et tourne la roue
   ];
   const plansB: Plan[] = [
     { mode: "4", correct: true },
@@ -230,7 +233,7 @@ async function main() {
     const resA = r.reveal!.results[idA];
     const resB = r.reveal!.results[idB];
     const mult = (id: string) => r.players.find((p) => p.id === id)!.modifiers.pointsMultiplier;
-    const expected = (pl: Plan, id: string) => (pl.mode && pl.correct ? Math.round({ "4": 50, "2": 100, solo: 200 }[pl.mode] * mult(id)) : 0);
+    const expected = (pl: Plan, id: string) => (pl.mode && pl.correct ? Math.round({ "2": 50, "4": 100, solo: 200 }[pl.mode] * mult(id)) : 0);
     check(resA.points === expected(pa, idA), `Alex (${pa.mode ?? "aucun"}, ${pa.correct ? "bonne" : "mauvaise"}) → ${resA.points} pts (attendu ${expected(pa, idA)})`);
     check(resB.points === expected(pb, idB), `Sarah (${pb.mode ?? "aucun"}, ${pb.correct ? "bonne" : "mauvaise"}) → ${resB.points} pts (attendu ${expected(pb, idB)})`);
     if (!pa.mode) check(resA.timedOut, "sans réponse : temps écoulé, aucun point");
@@ -246,11 +249,11 @@ async function main() {
       log(`5. CLASSEMENT — fin de la manche ${round}`);
       const lb = await waitFor(A, (st) => st.phase === "leaderboard" || st.phase === "final", "classement", 20_000);
       if (lb.phase === "final") break;
-      await shot(A, `09-classement-manche-${round}`);
+      if (round === 1) await shot(A, `09-classement-manche-${round}`);
       check(lb.ranking.length === 4 && lb.players.length === 4, "classement complet, personne n'est éliminé");
 
       log("6. ROUE BONUS / MALUS");
-      const wh = await waitFor(A, (st) => st.phase === "wheel" && (st.wheel?.stage === "waiting_spin" || st.wheel?.stage === "intro"), "roue prête", 20_000);
+      const wh = await waitFor(A, (st) => st.phase === "wheel" && !!st.wheel, "roue prête", 20_000);
       const spinner = wh.players.find((p) => p.id === wh.wheel!.spinnerId)!;
       const best = [...wh.players].sort((a, b) => b.roundScore - a.roundScore)[0];
       check(spinner.roundScore === best.roundScore, `${spinner.name} (meilleur de la manche, ${spinner.roundScore} pts) tourne la roue`);
@@ -263,13 +266,13 @@ async function main() {
       }
       const spin = await waitFor(A, (st) => st.wheel?.stage !== "intro" && st.wheel?.stage !== "waiting_spin", "roue qui tourne", 25_000);
       check(spin.wheel?.resultIndex !== null, "le serveur a tiré le résultat de la roue");
-      if (spin.wheel?.stage === "spinning") await shot(A, `11-roue-tourne-manche-${round}`);
+      if (spin.wheel?.stage === "spinning" && round === 1) await shot(A, `11-roue-tourne-manche-${round}`);
       const after = await waitFor(A, (st) => st.wheel?.stage === "choose_target" || st.wheel?.stage === "result", "résultat de la roue", 20_000);
       // scores de fin de manche = scores avant la roue
       const beforeWheel = Object.fromEntries(lb.players.map((p) => [p.id, p.score]));
       if (after.wheel!.stage === "choose_target") {
         log("7. CHOIX D'UNE CIBLE");
-        await shot(A, `12-choix-cible-manche-${round}`);
+        if (round === 1) await shot(A, `12-choix-cible-manche-${round}`);
         if (page) {
           const btn = page.locator(".targets button").first();
           await btn.click({ timeout: 10_000, force: true });
@@ -279,7 +282,7 @@ async function main() {
       log(`  effet : ${res.wheel!.outcome!.text}`);
       const changes = res.wheel!.outcome!.scoreChanges;
       for (const p of res.players) check(p.score === Math.max(0, (beforeWheel[p.id] ?? p.score) + (changes[p.id] ?? 0)), `score de ${p.name} cohérent après la roue (${p.score})`);
-      await shot(A, `13-effet-roue-manche-${round}`);
+      if (round === 1) await shot(A, `13-effet-roue-manche-${round}`);
       log("8. NOUVELLE MANCHE");
       const nr = await waitFor(A, (st) => st.round === round + 1, "nouvelle manche", 25_000);
       check(nr.round === round + 1, `manche ${round + 1} lancée`);
