@@ -82,6 +82,10 @@ export interface PublicPlayer {
   score: number;
   connected: boolean;
   isHost: boolean;
+  /** Candidat simulé par le serveur (partie de démonstration). */
+  bot: boolean;
+  /** Joueur humain dont le serveur joue les coups (pilote automatique). */
+  autopilot: boolean;
   /** Mode choisi pendant la question en cours (visible par tous : « Sarah joue SOLO ! »). */
   mode: AnswerMode | null;
   answered: boolean;
@@ -209,6 +213,9 @@ export type ClientMessage =
   | { t: "spin" }
   | { t: "target"; playerId: string }
   | { t: "restart" }
+  | { t: "addBots"; count?: number }
+  | { t: "removeBots" }
+  | { t: "autopilot"; on: boolean }
   | { t: "leave" }
   | { t: "ping"; clientTime: number };
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useGame } from "@/lib/net";
+import { useEffect, useState } from "react";
+import { serverNow, useGame } from "@/lib/net";
 import { audio } from "@/lib/audio";
 import type { Quality } from "../stage/Stage";
 
@@ -64,6 +64,45 @@ export function Hud({ quality, onQuality }: { quality: Quality; onQuality: (q: Q
           ⏏
         </button>
       </div>
+    </div>
+  );
+}
+
+/** Chrono géant façon habillage TV, synchronisé sur l'échéance personnelle du joueur. */
+export function BroadcastTimer() {
+  const state = useGame((s) => s.state);
+  const priv = useGame((s) => s.priv);
+  const [now, setNow] = useState(serverNow());
+  const q = state?.phase === "question" ? state.question : null;
+  const active = !!q?.text;
+  useEffect(() => {
+    if (!active) return;
+    let raf = 0;
+    const loop = () => {
+      setNow(serverNow());
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [active]);
+  if (!q || !q.text) return null;
+  const deadline = priv?.deadline ?? q.endsAt;
+  const total = deadline - q.startsAt;
+  const remaining = Math.max(0, deadline - now);
+  const secs = Math.ceil(remaining / 1000);
+  const ratio = remaining / total;
+  const urgent = secs <= 3;
+  const r = 44;
+  const c = 2 * Math.PI * r;
+  const beat = 1 + Math.pow((remaining % 1000) / 1000, 6) * (urgent ? 0.18 : 0.07);
+  return (
+    <div className={`bc-timer ${urgent ? "urgent" : ""} ${secs === 0 ? "done" : ""}`} aria-live="off" aria-label={`${secs} secondes`}>
+      <svg viewBox="0 0 100 100" style={{ transform: `scale(${beat})` }}>
+        <circle cx="50" cy="50" r={r} className="track" />
+        <circle cx="50" cy="50" r={r} className="bar" strokeDasharray={c} strokeDashoffset={c * (1 - ratio)} />
+      </svg>
+      <span className="display">{secs}</span>
+      {secs === 0 && <em>VERROUILLÉ</em>}
     </div>
   );
 }

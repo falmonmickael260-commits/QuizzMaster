@@ -19,6 +19,8 @@ export function demoState(phase: Phase | "attract", start: number, now: number):
     score: SCORES[i],
     connected: true,
     isHost: i === 0,
+    bot: i > 0,
+    autopilot: false,
     mode: null,
     answered: false,
     deadline: null,
@@ -58,7 +60,7 @@ export function demoState(phase: Phase | "attract", start: number, now: number):
     const modes = ["solo", "2", "4", null, "2", "solo", "4", null] as const;
     players.forEach((p, i) => {
       p.mode = modes[i];
-      p.answered = i % 3 === 0;
+      p.answered = !!p.mode && i % 3 === 0;
       p.deadline = question.endsAt;
     });
     return { ...base, question };
@@ -68,7 +70,7 @@ export function demoState(phase: Phase | "attract", start: number, now: number):
       players.map((p, i) => {
         const mode = (["solo", "2", "4", null, "2", "solo", "4", "2"] as const)[i];
         const correct = [true, true, false, false, true, false, true, false][i];
-        const pts = correct && mode ? { solo: 200, "2": 100, "4": 50 }[mode] : 0;
+        const pts = correct && mode ? { solo: 200, "2": 50, "4": 100 }[mode] : 0;
         p.lastResult = { questionIndex: 7, mode, answer: correct ? "Vénus" : "Mercure", correct, points: pts, basePoints: pts, multiplier: 1, timedOut: !mode };
         p.mode = mode;
         p.answered = !!mode;

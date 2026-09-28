@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MODE_LABELS, MODE_POINTS, type AnswerMode } from "@shared/config";
+import { MODE_LABELS, MODE_ORDER, MODE_POINTS, REVEAL_LOCK_MS, type AnswerMode } from "@shared/config";
 import { serverNow, useGame } from "@/lib/net";
 import { formatScore } from "@/lib/draw";
 import { audio } from "@/lib/audio";
 
-const MODES: AnswerMode[] = ["4", "2", "solo"];
+const MODES = MODE_ORDER;
 
 function useFrameNow(active: boolean) {
   const [now, setNow] = useState(serverNow());
@@ -55,8 +55,12 @@ export function Console() {
   const answer = useGame((s) => s.answer);
   const me = state.players.find((p) => p.id === playerId)!;
   const inQuestion = state.phase === "question" && !!state.question;
-  const now = useFrameNow(inQuestion);
-  const score = useRolling(me.score);
+  const inLock = state.phase === "reveal" && serverNow() - state.phaseStartedAt < REVEAL_LOCK_MS + 100;
+  const now = useFrameNow(inQuestion || inLock);
+  const locked = state.phase === "reveal" && now - state.phaseStartedAt < REVEAL_LOCK_MS;
+  // le score ne « bouge » qu'une fois la bonne réponse révélée
+  const lockedPoints = locked ? state.reveal?.results[me.id]?.points ?? 0 : 0;
+  const score = useRolling(me.score - lockedPoints);
   const [solo, setSolo] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const q = state.question;
@@ -78,7 +82,7 @@ export function Console() {
     const onKey = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement)?.tagName === "INPUT") return;
       if (!priv?.mode) {
-        const m = ({ "1": "4", "2": "2", "3": "solo" } as Record<string, AnswerMode>)[e.key];
+        const m = MODES[Number(e.key) - 1] as AnswerMode | undefined;
         if (m) chooseMode(m);
       } else if (priv.options.length) {
         const i = "abcd".indexOf(e.key.toLowerCase());
@@ -128,7 +132,8 @@ export function Console() {
         body = (
           <div>
             {timer}
-            <div className="status-big display result-bad">⏱ Temps écoulé !</div>
+            <div className="status-big display result-bad">🔒 Les réponses sont verrouillées</div>
+            <div className="status-sub">Temps écoulé : aucune réponse enregistrée</div>
           </div>
         );
       } else if (!priv?.mode) {
@@ -198,6 +203,14 @@ export function Console() {
         );
       }
     }
+  } else if (state.phase === "reveal" && state.reveal && locked) {
+    const r = state.reveal.results[me.id];
+    body = (
+      <div>
+        <div className="status-big display">🔒 Les réponses sont verrouillées</div>
+        <div className="status-sub">{r?.answer ? `Votre réponse : « ${r.answer} » — verdict sur le grand écran…` : "Aucune réponse enregistrée"}</div>
+      </div>
+    );
   } else if (state.phase === "reveal" && state.reveal) {
     const r = state.reveal.results[me.id];
     body = r?.correct ? (
@@ -227,6 +240,7 @@ export function Console() {
         <span className="badges">{badges}</span>
       </div>
       <div className="console-screen">
+        {q?.text && (state.phase === "question" || (state.phase === "reveal" && locked)) && <div className="console-question">{q.text}</div>}
         {body ?? (
           <div className="me-line">
             <span className="me-name display">{me.name}</span>

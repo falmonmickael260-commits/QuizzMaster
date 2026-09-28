@@ -1,5 +1,7 @@
 "use client";
 
+import { REVEAL_LOCK_MS } from "@shared/config";
+
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
@@ -29,6 +31,13 @@ export const CAMERAS = {
     const dir = V(2 - WHEEL_POS.x, 0, 12 - WHEEL_POS.z).normalize();
     return { pos: c.clone().addScaledVector(dir, close ? 6.8 : 9.5).add(V(0, close ? 0.4 : 1.4, 0)), target: c.clone().add(V(close ? 0 : 2.5, close ? 0 : -0.6, 0)), fov: 45, speed: 2 };
   },
+  // plan bas sur la rangée de candidats, grand écran visible au-dessus d'eux
+  candidats: (t: number, side: number): Shot => ({
+    pos: V(side * 4.2 + Math.sin(t * 0.0002) * 0.8, 3.1, 11.5),
+    target: V(-side * 1.5, 3.4, -3.5),
+    fov: 50,
+    speed: 1.4,
+  }),
   classement: (): Shot => ({ pos: V(0, 6.6, 9.5), target: V(SCREEN_POS.x, SCREEN_POS.y - 0.6, SCREEN_POS.z), fov: 52 }),
   joueur: (seat: number): Shot => {
     const c = seatCamera(seat);
@@ -62,15 +71,18 @@ function directShot(s: PublicRoomState | null, now: number, mySeat: number | nul
       if (!s.question?.text) return CAMERAS.animateur();
       const sinceStart = now - s.question.startsAt;
       if (sinceStart < 2600) return CAMERAS.question();
+      // alternance plateau / candidats, jamais plus de ~4 s sur le même plan
+      const cut = Math.floor((sinceStart - 2600) / 4200);
+      if (cut % 3 === 1) return CAMERAS.candidats(now, cut % 2 ? 1 : -1);
       return CAMERAS.plateauClose(now);
     }
     case "reveal": {
-      if (t < 2600) return CAMERAS.question();
+      if (t < REVEAL_LOCK_MS + 2600) return CAMERAS.question();
       // plan rapproché sur le meilleur coup (SOLO réussi), sinon sur soi
       const r = s.reveal?.results ?? {};
       const star = s.players.find((p) => r[p.id]?.correct && r[p.id]?.mode === "solo") ?? s.players.find((p) => r[p.id]?.correct);
       const focus = star?.seat ?? mySeat;
-      if (t < 5200 && focus !== null && focus !== undefined) return CAMERAS.joueur(focus);
+      if (t < REVEAL_LOCK_MS + 5600 && focus !== null && focus !== undefined) return CAMERAS.joueur(focus);
       return CAMERAS.plateau();
     }
     case "leaderboard": {

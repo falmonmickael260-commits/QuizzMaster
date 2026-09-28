@@ -2,16 +2,21 @@
 
 export type AnswerMode = "4" | "2" | "solo";
 
+// Barème officiel : 2 réponses = plus de sécurité (50), 4 réponses = plus de possibilités (100),
+// SOLO = aucun filet de sécurité (200).
 export const MODE_POINTS: Record<AnswerMode, number> = {
-  "4": 50,
-  "2": 100,
+  "2": 50,
+  "4": 100,
   solo: 200,
 };
 
-export const MODE_LABELS: Record<AnswerMode, { title: string; subtitle: string; color: string }> = {
-  "4": { title: "4", subtitle: "Je ne sais vraiment pas", color: "#ff3b5c" },
-  "2": { title: "2", subtitle: "J'ai un doute", color: "#ff9f1c" },
-  solo: { title: "SOLO", subtitle: "Je suis sûr de moi", color: "#2ee59d" },
+/** Ordre d'affichage des trois niveaux d'aide (touches 1, 2, 3). */
+export const MODE_ORDER: AnswerMode[] = ["2", "4", "solo"];
+
+export const MODE_LABELS: Record<AnswerMode, { title: string; subtitle: string; color: string; name: string }> = {
+  "2": { title: "2", name: "2 RÉPONSES", subtitle: "Plus de sécurité", color: "#ff9f1c" },
+  "4": { title: "4", name: "4 RÉPONSES", subtitle: "Plus de possibilités", color: "#3a86ff" },
+  solo: { title: "SOLO", name: "SOLO", subtitle: "Aucun filet de sécurité", color: "#2ee59d" },
 };
 
 export const QUESTIONS_PER_ROUND = 5;
@@ -29,7 +34,8 @@ export const TIMINGS = {
   questionAnnounceMs: 2_500,
   /** Délai de grâce réseau accepté après la fin du chrono (ne donne aucun temps au joueur, compense la latence). */
   networkGraceMs: 350,
-  revealMs: 7_500,
+  /** Inclut ~1,4 s d'écran « réponses verrouillées » avant la bonne réponse. */
+  revealMs: 9_000,
   leaderboardMs: 7_000,
   wheelIntroMs: 3_500,
   wheelWaitSpinMs: 12_000,
@@ -41,3 +47,6 @@ export const TIMINGS = {
 
 /** Bornes des modificateurs de temps (en secondes) — le chrono ne descend jamais sous ce seuil. */
 export const MIN_QUESTION_SECONDS = 7;
+
+/** Début de la révélation : écran « réponses verrouillées » avant d'afficher la bonne réponse (ms). */
+export const REVEAL_LOCK_MS = 1400;
