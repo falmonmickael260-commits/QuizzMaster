@@ -1,0 +1,86 @@
+# Pilotage du déploiement Railway depuis GitHub Actions (Actions → Railway → Run workflow).
+# Secret requis : RAILWAY_TOKEN (Railway → projet → Settings → Tokens → jeton de projet).
+# Secrets facultatifs : SUPABASE_SERVICE_ROLE_KEY, ADMIN_PASSWORD (envoyés à Railway par « setup »).
+# Aucune valeur secrète n'est affichée dans les journaux.
+name: Railway
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "diagnose | setup | deploy"
+        required: true
+        default: diagnose
+      service:
+        description: "Nom du service Railway (vide = détection automatique)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  railway:
+    runs-on: ubuntu-latest
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Outil Railway
+        run: npm install -g @railway/cli@latest && railway --version
+
+      - name: Service
+        id: svc
+        run: |
+          if [ -z "$RAILWAY_TOKEN" ]; then echo "::error::Secret RAILWAY_TOKEN manquant"; exit 1; fi
+          railway status || true
+          SVC="${{ inputs.service }}"
+          if [ -z "$SVC" ]; then
+            railway service list --json > services.json || true
+            SVC=$(node -e 'try{const j=require("./services.json");const a=Array.isArray(j)?j:(j.services||j.edges||[]);const n=a.map(s=>s.name||s.node?.name||s.serviceName).filter(Boolean);console.log(n[0]||"")}catch{console.log("")}')
+            echo "Services trouvés :"; cat services.json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const j=JSON.parse(s);const a=Array.isArray(j)?j:(j.services||j.edges||[]);console.log(a.map(x=>" - "+(x.name||x.node?.name||x.serviceName)).join("\n"))}catch{console.log(s.slice(0,500))}})'
+          fi
+          echo "Service utilisé : $SVC"
+          echo "name=$SVC" >> "$GITHUB_OUTPUT"
+
+      - name: Diagnostic
+        if: inputs.action == 'diagnose'
+        env:
+          SVC: ${{ steps.svc.outputs.name }}
+        run: |
+          echo "── Variables définies (noms seulement)"
+          railway variable list --service "$SVC" --json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log(Object.keys(JSON.parse(s)).filter(k=>!k.startsWith("RAILWAY_")).join(", ")||"(aucune)")}catch{console.log("illisible")}})' || true
+          echo "── Domaines"
+          railway domain list --service "$SVC" || true
+          echo "── Statut des déploiements"
+          railway service status --service "$SVC" || true
+          echo "── Journaux de build"
+          timeout 60 railway logs --service "$SVC" --build --lines 120 || true
+          echo "── Journaux d'exécution"
+          timeout 60 railway logs --service "$SVC" --deployment --lines 80 || true
+
+      - name: Réglages
+        if: inputs.action == 'setup'
+        env:
+          SVC: ${{ steps.svc.outputs.name }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+        run: |
+          set_var() { if [ -n "$2" ]; then printf '%s' "$2" | railway variable set "$1" --stdin --skip-deploys --service "$SVC" > /dev/null && echo "✓ $1"; else echo "– $1 (secret GitHub absent, ignoré)"; fi; }
+          if [ -n "$SUPABASE_SERVICE_ROLE_KEY" ]; then set_var SUPABASE_URL "https://wcdoavbmexzgjhmmrsvj.supabase.co"; fi
+          set_var SUPABASE_SERVICE_ROLE_KEY "$SUPABASE_SERVICE_ROLE_KEY"
+          set_var ADMIN_PASSWORD "$ADMIN_PASSWORD"
+          echo "── Domaine public"
+          railway domain list --service "$SVC" | grep -q "railway.app" || railway domain --service "$SVC" || true
+          railway domain list --service "$SVC" || true
+
+      - name: Déploiement
+        if: inputs.action == 'deploy' || inputs.action == 'setup'
+        env:
+          SVC: ${{ steps.svc.outputs.name }}
+        run: |
+          railway up --ci --service "$SVC"
+          railway domain list --service "$SVC" || true
