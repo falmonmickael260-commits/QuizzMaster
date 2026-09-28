@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: "diagnose | setup | deploy"
+        description: "diagnose | setup | deploy | check"
         required: true
         default: diagnose
       service:
@@ -84,3 +84,14 @@ jobs:
         run: |
           railway up --ci --service "$SVC"
           railway domain list --service "$SVC" || true
+
+      - name: Contrôle du jeu en ligne
+        if: inputs.action == 'check' || inputs.action == 'deploy' || inputs.action == 'setup'
+        env:
+          SVC: ${{ steps.svc.outputs.name }}
+        run: |
+          npm install --no-save ws@8 > /dev/null
+          DOMAIN=$(railway domain list --service "$SVC" | grep -o '[a-z0-9-]*\.up\.railway\.app' | head -1)
+          echo "Adresse : https://$DOMAIN"
+          for i in $(seq 1 30); do curl -sf "https://$DOMAIN/api/health" > /dev/null && break; sleep 5; done
+          node scripts/check-live.mjs "https://$DOMAIN"
