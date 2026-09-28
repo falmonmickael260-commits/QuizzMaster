@@ -13,7 +13,7 @@ import { serverNow } from "@/lib/net";
 import { audio } from "@/lib/audio";
 import { hostMood } from "@/lib/mood";
 import { Character } from "./Character";
-import { useCanvasTexture } from "./useCanvasTexture";
+import { SCREEN_TINT, useCanvasTexture } from "./useCanvasTexture";
 
 // ─── Grand écran ─────────────────────────────────────────────────────────────
 
@@ -31,7 +31,7 @@ export function BigScreen({ state }: { state: PublicRoomState | null }) {
   return (
     <mesh position={[SCREEN_POS.x, SCREEN_POS.y, SCREEN_POS.z]}>
       <planeGeometry args={[SCREEN_SIZE.w, SCREEN_SIZE.h]} />
-      <meshBasicMaterial map={tex} toneMapped={false} />
+      <meshBasicMaterial map={tex} color={SCREEN_TINT} toneMapped={false} />
     </mesh>
   );
 }
@@ -55,7 +55,7 @@ export function LivePanel({ state, colors }: { state: PublicRoomState | null; co
       </RoundedBox>
       <mesh>
         <planeGeometry args={[3.8, 4.5]} />
-        <meshBasicMaterial map={tex} toneMapped={false} />
+        <meshBasicMaterial map={tex} color={SCREEN_TINT} toneMapped={false} />
       </mesh>
       <mesh position={[0, -4.3, -0.2]}>
         <cylinderGeometry args={[0.12, 0.2, 4, 12]} />

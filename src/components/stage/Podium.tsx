@@ -11,7 +11,7 @@ import { candidateMood } from "@/lib/mood";
 import { SEATS } from "@/lib/layout";
 import { serverNow } from "@/lib/net";
 import { Character } from "./Character";
-import { useCanvasTexture } from "./useCanvasTexture";
+import { SCREEN_TINT, useCanvasTexture } from "./useCanvasTexture";
 
 const BODY_MAT = new THREE.MeshStandardMaterial({ color: "#0c1236", roughness: 0.28, metalness: 0.55 });
 const TRIM_MAT = new THREE.MeshStandardMaterial({ color: "#1b2566", roughness: 0.3, metalness: 0.7 });
@@ -32,16 +32,16 @@ interface Props {
 export function CandidateSeat({ seat, player, state, priv, color, isMe, selectable, onSelect }: Props) {
   const s = SEATS[seat];
   const frontTex = useCanvasTexture(
-    800,
-    400,
+    1024,
+    512,
     (now) => podiumFrontSig(player, state, now, color) + (isMe ? "m" : ""),
-    (ctx, now) => drawPodiumFront(ctx, 800, 400, player, state, now, color, isMe),
+    (ctx, now) => drawPodiumFront(ctx, 1024, 512, player, state, now, color, isMe),
   );
   const topTex = useCanvasTexture(
-    640,
-    376,
+    896,
+    526,
     (now) => podiumTopSig(player, state, isMe ? priv : null, now),
-    (ctx, now) => drawPodiumTop(ctx, 640, 376, player, state, isMe ? priv : null, now),
+    (ctx, now) => drawPodiumTop(ctx, 896, 526, player, state, isMe ? priv : null, now),
   );
   const ledMat = useMemo(() => new THREE.MeshBasicMaterial({ color, toneMapped: false }), [color]);
   const ring = useRef<THREE.Mesh>(null);
@@ -101,7 +101,7 @@ export function CandidateSeat({ seat, player, state, priv, color, isMe, selectab
         {/* écran avant : PSEUDO + SCORE, intégré dans la façade */}
         <mesh position={[0, 0.62, 0.395]}>
           <planeGeometry args={[1.56, 0.78]} />
-          <meshBasicMaterial map={frontTex} toneMapped={false} />
+          <meshBasicMaterial map={frontTex} color={SCREEN_TINT} toneMapped={false} />
         </mesh>
         {/* écran incliné du candidat, orienté vers lui */}
         <group position={[0, 1.2, -0.05]} rotation={[0, Math.PI, 0]}>
@@ -111,7 +111,7 @@ export function CandidateSeat({ seat, player, state, priv, color, isMe, selectab
             </mesh>
             <mesh>
               <planeGeometry args={[0.92, 0.54]} />
-              <meshBasicMaterial map={topTex} toneMapped={false} />
+              <meshBasicMaterial map={topTex} color={SCREEN_TINT} toneMapped={false} />
             </mesh>
           </group>
           <mesh position={[0, 0.08, 0.05]} material={CASE_MAT}>
