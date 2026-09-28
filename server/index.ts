@@ -6,6 +6,7 @@ import { WebSocketServer } from "ws";
 import { createQuestionStore } from "./store";
 import { RoomManager } from "./game/rooms";
 import { createAdminHandler } from "./admin/api";
+import { TIMINGS } from "../shared/config";
 
 const dev = process.env.NODE_ENV !== "production";
 const port = Number(process.env.PORT || 3000);
@@ -21,7 +22,11 @@ async function main() {
   await app.prepare();
   const upgradeNext = app.getUpgradeHandler();
 
-  const rooms = new RoomManager(store);
+  // BQ_TIME_SCALE (défaut 1) ralentit toutes les phases — réservé aux démos et captures d'écran.
+  const scale = Math.max(0.1, Number(process.env.BQ_TIME_SCALE || 1));
+  const timings = Object.fromEntries(Object.entries(TIMINGS).map(([k, v]) => [k, Math.round(v * scale)])) as typeof TIMINGS;
+  if (scale !== 1) console.warn(`[blind-quizz] ⚠ BQ_TIME_SCALE=${scale} : durées modifiées (mode démo)`);
+  const rooms = new RoomManager(store, timings);
   const admin = createAdminHandler(store);
 
   const server = http.createServer(async (req, res) => {
