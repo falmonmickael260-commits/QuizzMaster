@@ -265,7 +265,8 @@ async function main() {
       check(spin.wheel?.resultIndex !== null, "le serveur a tiré le résultat de la roue");
       if (spin.wheel?.stage === "spinning") await shot(A, `11-roue-tourne-manche-${round}`);
       const after = await waitFor(A, (st) => st.wheel?.stage === "choose_target" || st.wheel?.stage === "result", "résultat de la roue", 20_000);
-      const beforeWheel = Object.fromEntries(after.players.map((p) => [p.id, p.score]));
+      // scores de fin de manche = scores avant la roue
+      const beforeWheel = Object.fromEntries(lb.players.map((p) => [p.id, p.score]));
       if (after.wheel!.stage === "choose_target") {
         log("7. CHOIX D'UNE CIBLE");
         await shot(A, `12-choix-cible-manche-${round}`);

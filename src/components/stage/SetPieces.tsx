@@ -345,6 +345,9 @@ export function Confetti({ active, origin = new THREE.Vector3(0, 9, -1), count =
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
   useEffect(() => {
+    // Calque 1 : visibles par la caméra principale mais pas par la caméra de réflexion du sol
+    // (le sol réfléchissant produisait des valeurs invalides avec ces particules).
+    mesh.current?.layers.set(1);
     parts.forEach((pt, i) => mesh.current?.setColorAt(i, pt.color));
     if (mesh.current?.instanceColor) mesh.current.instanceColor.needsUpdate = true;
   }, [parts]);
