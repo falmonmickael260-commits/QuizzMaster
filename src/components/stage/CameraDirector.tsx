@@ -1,7 +1,7 @@
 "use client";
 
 import { useFrame, useThree } from "@react-three/fiber";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import type { PublicRoomState } from "@shared/types";
 import { HOST_POS, SCREEN_POS, WHEEL_CENTER_Y, WHEEL_POS, seatCamera } from "@/lib/layout";
@@ -40,7 +40,7 @@ export const CAMERAS = {
     return { pos: V(Math.sin(a) * 19, 8.5 + Math.sin(t * 0.00013) * 1.8, 1.2 + Math.cos(a) * 19), target: V(0, 2.8, -1.5), fov: 45, speed: 1 };
   },
   finale: (t: number): Shot => {
-    const a = Math.sin(t * 0.00014) * 0.95;
+    const a = Math.sin(t * 0.00014) * 0.6;
     return { pos: V(Math.sin(a) * 16, 5.8 + Math.sin(t * 0.0003) * 1.5, 1.2 + Math.cos(a) * 16), target: V(0, 3, -1.5), fov: 48, speed: 1.2 };
   },
 };
@@ -111,22 +111,28 @@ export function CameraDirector({ state, mySeat, override }: { state: PublicRoomS
   const curFov = useRef(45);
   const stateRef = useRef(state);
   stateRef.current = state;
+  useEffect(() => {
+    camera.layers.enable(1); // effets (confettis) rendus hors réflexion du sol
+  }, [camera]);
 
   useFrame((_, dt) => {
     const shot = override ?? directShot(stateRef.current, serverNow(), mySeat);
     const aspect = size.width / size.height;
     let pos = shot.pos.clone();
     let fov = shot.fov;
-    // Écrans étroits (smartphone portrait) : on recule et on élargit pour garder le plateau lisible.
+    let target = shot.target;
+    // Écrans étroits (smartphone portrait) : on recule et on élargit pour garder le plateau lisible,
+    // et on vise plus bas pour que la scène reste au-dessus de l'écran du pupitre (console en bas).
     if (aspect < 1.5) {
       const f = Math.min(2.1, 1.5 / aspect);
       const off = pos.clone().sub(shot.target);
       pos = shot.target.clone().add(off.multiplyScalar(0.55 + 0.45 * f));
-      fov = Math.min(72, fov * (0.85 + 0.25 * f));
+      fov = Math.min(70, fov * (0.85 + 0.25 * f));
+      if (aspect < 0.9) target = shot.target.clone().add(V(0, -Math.min(4.5, off.length() * 0.14) * (0.9 - aspect) * 2.4, 0));
     }
     const k = 1 - Math.exp(-dt * (shot.speed ?? 1.6));
     curPos.current.lerp(pos, k);
-    curTarget.current.lerp(shot.target, k);
+    curTarget.current.lerp(target, k);
     curFov.current += (fov - curFov.current) * k;
     // légère respiration « caméra à l'épaule »
     const tt = performance.now() / 1000;
