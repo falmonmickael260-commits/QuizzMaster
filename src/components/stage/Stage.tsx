@@ -62,7 +62,7 @@ export default function Stage({ state, priv, myId, quality, onQuality, onSelectT
   return (
     <Canvas
       className="stage-canvas"
-      dpr={quality === "high" ? [1, 2] : [1, 1.5]}
+      dpr={quality === "high" ? [1, 1.5] : [1, 1]}
       // en mode test (?fps=), on conserve le tampon pour que les captures d'écran automatiques soient fiables
       gl={{ antialias: quality === "high", powerPreference: "high-performance", preserveDrawingBuffer: FPS_LIMIT > 0 }}
       camera={{ position: [0, 9, 26], fov: 45, near: 0.1, far: 120 }}

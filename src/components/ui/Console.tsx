@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MODE_LABELS, MODE_ORDER, MODE_POINTS, REVEAL_LOCK_MS, type AnswerMode } from "@shared/config";
 import { serverNow, useGame } from "@/lib/net";
 import { formatScore } from "@/lib/draw";
@@ -63,6 +63,8 @@ export function Console() {
   const lockedPoints = locked ? state.reveal?.results[me.id]?.points ?? 0 : 0;
   const score = useRolling(me.score - lockedPoints);
   const [solo, setSolo] = useState("");
+  // retour visuel immédiat pendant l'aller-retour avec le serveur
+  const [pending, setPending] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const q = state.question;
   const started = !!q?.text && inQuestion;
@@ -73,6 +75,29 @@ export function Console() {
   const canAct = started && !expired && !priv?.answered;
 
   useEffect(() => setSolo(""), [q?.index]);
+  useEffect(() => setPending(null), [q?.index, priv?.mode, priv?.answered]);
+  // filet de sécurité si le serveur ne confirme pas (refus, coupure réseau)
+  useEffect(() => {
+    if (!pending) return;
+    const t = setTimeout(() => setPending(null), 2500);
+    return () => clearTimeout(t);
+  }, [pending]);
+  const pickMode = useCallback(
+    (m: AnswerMode) => {
+      if (pending) return;
+      setPending(`mode:${m}`);
+      chooseMode(m);
+    },
+    [pending, chooseMode],
+  );
+  const pickAnswer = useCallback(
+    (value: string) => {
+      if (pending) return;
+      setPending(`answer:${value}`);
+      answer(value);
+    },
+    [pending, answer],
+  );
   useEffect(() => {
     if (priv?.mode === "solo" && !priv.answered) inputRef.current?.focus();
   }, [priv?.mode, priv?.answered]);
@@ -84,15 +109,15 @@ export function Console() {
       if ((e.target as HTMLElement)?.tagName === "INPUT") return;
       if (!priv?.mode) {
         const m = MODES[Number(e.key) - 1] as AnswerMode | undefined;
-        if (m) chooseMode(m);
+        if (m) pickMode(m);
       } else if (priv.options.length) {
         const i = "abcd".indexOf(e.key.toLowerCase());
-        if (i >= 0 && priv.options[i]) answer(priv.options[i]);
+        if (i >= 0 && priv.options[i]) pickAnswer(priv.options[i]);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [canAct, priv, chooseMode, answer]);
+  }, [canAct, priv, pickMode, pickAnswer]);
 
   const badges = [];
   if (me.modifiers.shield) badges.push(<span key="s" className="badge good">🛡 BOUCLIER</span>);
@@ -147,11 +172,11 @@ export function Console() {
                 {MODES.map((m, i) => (
                   <button
                     key={m}
-                    className="mode-btn"
+                    className={`mode-btn ${pending === `mode:${m}` ? "pending" : pending ? "dimmed" : ""}`}
                     style={{ background: MODE_LABELS[m].color }}
                     onClick={() => {
                       audio.unlock();
-                      chooseMode(m);
+                      pickMode(m);
                     }}
                   >
                     <b>{MODE_LABELS[m].title}</b>
@@ -174,12 +199,12 @@ export function Console() {
                 className="solo-form"
                 onSubmit={(e) => {
                   e.preventDefault();
-                  if (solo.trim()) answer(solo.trim());
+                  if (solo.trim()) pickAnswer(solo.trim());
                 }}
               >
                 <input ref={inputRef} className="input" placeholder="✍️ Écrivez la réponse…" value={solo} onChange={(e) => setSolo(e.target.value)} maxLength={60} autoComplete="off" autoCapitalize="characters" enterKeyHint="send" />
-                <button className="btn primary" type="submit" disabled={!solo.trim()}>
-                  Valider · 200
+                <button className="btn primary" type="submit" disabled={!solo.trim() || !!pending}>
+                  {pending ? "Envoi…" : `Valider · ${MODE_POINTS.solo}`}
                 </button>
               </form>
             </div>
@@ -193,7 +218,7 @@ export function Console() {
               <div className={`timer-num display ${urgent ? "urgent" : ""}`}>{secs}</div>
               <div className="options" style={{ gridTemplateColumns: priv.options.length === 2 ? "1fr 1fr" : undefined }}>
                 {priv.options.map((o, i) => (
-                  <button key={o} className="option-btn" onClick={() => answer(o)}>
+                  <button key={o} className={`option-btn ${pending === `answer:${o}` ? "pending" : pending ? "dimmed" : ""}`} onClick={() => pickAnswer(o)}>
                     <span className="option-letter">{"ABCD"[i]}</span>
                     {o}
                   </button>
