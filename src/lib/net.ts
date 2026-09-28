@@ -87,7 +87,9 @@ export const useGame = create<GameStore>((set, get) => ({
     if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
     set({ status: "connecting" });
     const proto = location.protocol === "https:" ? "wss" : "ws";
-    const url = process.env.NEXT_PUBLIC_GAME_WS_URL || `${proto}://${location.host}/ws`;
+    // Interface hébergée à part (ex. Vercel) : NEXT_PUBLIC_GAME_SERVER_URL pointe vers le serveur de jeu (ex. Railway).
+    const remote = process.env.NEXT_PUBLIC_GAME_SERVER_URL?.replace(/\/+$/, "").replace(/^http/, "ws");
+    const url = process.env.NEXT_PUBLIC_GAME_WS_URL || (remote ? `${remote}/ws` : `${proto}://${location.host}/ws`);
     const sock = new WebSocket(url);
     ws = sock;
     sock.onopen = () => {

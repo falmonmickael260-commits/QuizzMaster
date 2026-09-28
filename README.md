@@ -136,9 +136,22 @@ un WebSocket permet aussi d'envoyer des messages **privés** à un seul joueur (
 Brancher Supabase Realtime comme transport resterait possible (canal de broadcast par room, le serveur
 restant l'autorité), mais ce n'est pas implémenté aujourd'hui.
 
-Déploiement : il faut un hôte Node qui accepte les WebSockets de longue durée (Railway, Render, Fly.io,
-un VPS…). Les fonctions serverless (ex. Vercel) ne conviennent pas pour le serveur de jeu ; dans ce cas,
-hébergez l'interface séparément et pointez `NEXT_PUBLIC_GAME_WS_URL` vers le serveur de jeu.
+### Déploiement
+
+Le serveur de jeu a besoin d'un hôte Node qui garde des WebSockets ouverts (Railway, Render, Fly.io, un
+VPS…). Vercel n'exécute pas `server/index.ts` : l'interface s'affiche mais les parties restent sur
+« connexion perdue ».
+
+**Railway** (fichier `railway.json` fourni) : *New Project → Deploy from GitHub repo*, puis dans *Variables*
+`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PASSWORD`, et *Settings → Networking → Generate Domain*.
+Le build (`npm run build`) et le démarrage (`npm start`) sont automatiques ; `/api/health` sert de sonde.
+Le jeu complet (interface, parties, régie) est alors disponible sur l'adresse Railway.
+
+**Garder l'interface sur Vercel** : ajouter dans Vercel `NEXT_PUBLIC_GAME_SERVER_URL=https://<adresse-railway>`
+puis redéployer. Les parties se connectent au serveur Railway et l'API de la régie y est relayée.
+
+Sans Supabase, les questions sont stockées dans `data/store/questions.json`, qui est réinitialisé à chaque
+redéploiement sur ces hébergeurs : branchez Supabase pour conserver les modifications de la régie et les statistiques.
 
 ## Roue bonus / malus
 
