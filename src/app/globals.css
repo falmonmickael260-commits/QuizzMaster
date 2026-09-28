@@ -1129,3 +1129,15 @@ button {
     animation-duration: 0.01ms !important;
   }
 }
+
+/* Retour visuel immédiat du clic (en attendant la confirmation du serveur) */
+.mode-btn.pending,
+.option-btn.pending {
+  transform: scale(1.04);
+  box-shadow: 0 0 0 3px #fff, 0 0 24px rgba(255, 255, 255, 0.55);
+}
+.mode-btn.dimmed,
+.option-btn.dimmed {
+  opacity: 0.45;
+  pointer-events: none;
+}

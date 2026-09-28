@@ -73,7 +73,7 @@ export function Studio({ phase, quality }: { phase: Phase | "none"; quality: "hi
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
         <circleGeometry args={[30, 96]} />
         {quality === "high" && !DEBUG_FX.includes("norefl") ? (
-          <MeshReflectorMaterial resolution={1024} blur={[400, 100]} mixBlur={1} mixStrength={3} roughness={0.75} depthScale={0.8} minDepthThreshold={0.4} maxDepthThreshold={1.4} color="#070a1c" metalness={0.6} mirror={0.6} />
+          <MeshReflectorMaterial resolution={512} blur={[400, 100]} mixBlur={1} mixStrength={3} roughness={0.75} depthScale={0.8} minDepthThreshold={0.4} maxDepthThreshold={1.4} color="#070a1c" metalness={0.6} mirror={0.6} />
         ) : (
           <meshStandardMaterial color="#070a1c" roughness={0.35} metalness={0.7} />
         )}

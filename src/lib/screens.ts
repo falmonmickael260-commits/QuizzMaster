@@ -26,9 +26,9 @@ export function bigScreenSig(s: PublicRoomState | null, now: number): string {
   // animations : on redessine ~15 fois par seconde pendant les phases animées
   // Cadence adaptée au contenu : fluide quand ça bouge vraiment, économe sinon.
   let period = 1000;
-  if (t < 3500 || (s.phase === "leaderboard" && t < 3000) || (s.phase === "final" && t < 5000)) period = 50;
-  else if (s.phase === "question" && s.question?.text) period = 100;
-  else if (s.phase === "wheel" || s.phase === "final" || s.phase === "question") period = 150;
+  if (t < 3500 || (s.phase === "leaderboard" && t < 3000) || (s.phase === "final" && t < 5000)) period = 80;
+  else if (s.phase === "question" && s.question?.text) period = 200;
+  else if (s.phase === "wheel" || s.phase === "final" || s.phase === "question") period = 250;
   else if (s.phase === "lobby") period = 400;
   const tick = Math.floor(now / period);
   return [s.phase, s.phaseStartedAt, s.question?.text.length, s.reveal?.questionIndex, s.wheel?.stage, s.players.length, s.players.map((p) => `${p.answered ? 1 : 0}${p.score}`).join(","), tick, fontsVersion].join("|");
@@ -500,7 +500,7 @@ function drawFinal(ctx: Ctx, w: number, h: number, s: PublicRoomState, t: number
 
 export function podiumFrontSig(p: PublicPlayer | null, s: PublicRoomState | null, now: number, color: string) {
   if (!p || !s) return `empty|${fontsVersion}`;
-  const tick = isTweening(`pod-${p.id}`, now) ? Math.floor(now / 60) : s.phase === "wheel" && s.wheel?.stage === "choose_target" ? Math.floor(now / 250) : 0;
+  const tick = isTweening(`pod-${p.id}`, now) ? Math.floor(now / 100) : s.phase === "wheel" && s.wheel?.stage === "choose_target" ? Math.floor(now / 250) : 0;
   const locked = s.phase === "reveal" && now - s.phaseStartedAt < REVEAL_LOCK_MS;
   return [p.name, p.score, p.mode, p.answered, p.connected, s.phase, locked, s.reveal?.questionIndex, p.lastResult?.questionIndex, p.modifiers.shield, p.modifiers.pointsMultiplier, tick, color, fontsVersion, s.wheel?.stage, s.wheel?.targetId].join("|");
 }
@@ -588,7 +588,7 @@ export function drawPodiumFront(ctx: Ctx, w: number, h: number, p: PublicPlayer 
 export function podiumTopSig(p: PublicPlayer | null, s: PublicRoomState | null, priv: PrivateState | null, now: number) {
   if (!p || !s) return `e|${fontsVersion}`;
   // écran du joueur local : fluide ; écrans des adversaires : 4 images/s suffisent
-  const tick = s.phase === "question" ? Math.floor(now / (priv ? 100 : 250)) : 0;
+  const tick = s.phase === "question" ? Math.floor(now / (priv ? 250 : 500)) : 0;
   return [s.phase, p.mode, p.answered, priv?.options.join(","), priv?.answer, s.reveal?.questionIndex, p.score, tick, fontsVersion].join("|");
 }
 
