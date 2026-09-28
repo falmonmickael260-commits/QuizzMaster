@@ -1,0 +1,21 @@
+import { build } from "./_builder";
+
+export default build("cuisine", [
+  ["De quelle ville italienne la pizza Margherita est-elle originaire ?", "Naples", ["Rome", "Milan", "Florence"], "Elle aurait été créée en 1889 en l'honneur de la reine Marguerite, aux couleurs du drapeau italien.", 1, ["Napoli"]],
+  ["Quel fromage est traditionnellement utilisé dans une tartiflette ?", "Le reblochon", ["Le comté", "La raclette", "Le beaufort"], "La tartiflette a été popularisée dans les années 1980 par l'interprofession du reblochon.", 1, ["reblochon"]],
+  ["Quel est l'ingrédient principal du guacamole ?", "L'avocat", ["La tomate", "Le poivron", "Le concombre"], "Le mot vient du nahuatl « ahuacamolli », sauce d'avocat.", 1, ["avocat"]],
+  ["Quelle épice est la plus chère du monde ?", "Le safran", ["La vanille", "La cardamome", "La cannelle"], "Il faut environ 150 000 fleurs de crocus pour obtenir un kilo de safran.", 2, ["safran"]],
+  ["Quel pays est à l'origine des sushis ?", "Le Japon", ["La Chine", "La Corée du Sud", "La Thaïlande"], "Le sushi était à l'origine une méthode de conservation du poisson dans du riz fermenté, venue d'Asie du Sud-Est.", 1, ["Japon"]],
+  ["Quelle région française est célèbre pour la choucroute ?", "L'Alsace", ["La Lorraine", "La Bretagne", "La Normandie"], "La choucroute est du chou blanc fermenté ; en Alsace, on la sert garnie de charcuteries.", 1, ["Alsace"]],
+  ["Quel fruit est utilisé pour fabriquer le cidre ?", "La pomme", ["La poire", "Le raisin", "La prune"], "Le poiré, lui, est fabriqué à partir de poires.", 1, ["pomme", "pommes"]],
+  ["Quel fromage italien est indispensable au tiramisu ?", "Le mascarpone", ["La ricotta", "La mozzarella", "Le gorgonzola"], "« Tiramisù » signifie littéralement « remonte-moi », en référence au café et au cacao.", 1, ["mascarpone"]],
+  ["Quel pâtissier a créé le macaron moderne à deux coques garnies ?", "La maison Ladurée", ["Pierre Hermé", "Gaston Lenôtre", "Fauchon"], "Au début du XXe siècle, Pierre Desfontaines, de chez Ladurée, a eu l'idée d'assembler deux coques avec de la ganache.", 4, ["Ladurée", "Laduree", "Pierre Desfontaines"]],
+  ["Quel alcool est utilisé pour flamber les crêpes Suzette ?", "Le Grand Marnier", ["Le calvados", "Le rhum", "Le cognac"], "La recette classique utilise une liqueur d'orange, souvent du Grand Marnier ou du Cointreau.", 3, ["Grand Marnier", "Cointreau", "liqueur d'orange", "curacao"]],
+  ["De quel pays vient le plat appelé « paella » ?", "L'Espagne", ["Le Portugal", "Le Mexique", "L'Italie"], "La paella est née dans la région de Valence ; son nom désigne la poêle dans laquelle elle cuit.", 1, ["Espagne"]],
+  ["Quelle céréale est utilisée pour fabriquer le whisky écossais single malt ?", "L'orge", ["Le blé", "Le maïs", "Le seigle"], "Le single malt est fait exclusivement d'orge maltée dans une seule distillerie.", 3, ["orge", "orge maltée"]],
+  ["De quelle ville la bouillabaisse est-elle originaire ?", "Marseille", ["Nice", "Toulon", "Sète"], "À l'origine plat de pêcheurs, elle était préparée avec les poissons invendus du jour.", 1],
+  ["Quelle sauce est à base de jaunes d'œufs, de beurre et d'estragon ?", "La béarnaise", ["La hollandaise", "La mayonnaise", "La sauce tartare"], "La béarnaise a été créée vers 1836 près de Paris, au pavillon Henri IV de Saint-Germain-en-Laye, et non dans le Béarn.", 3, ["béarnaise", "bearnaise", "sauce béarnaise"]],
+  ["Quel fruit sec est à la base du massepain ?", "L'amande", ["La noisette", "La noix", "La pistache"], "La pâte d'amande est un mélange d'amandes en poudre et de sucre.", 2, ["amande", "amandes"]],
+  ["Quel est le plat national de la Belgique souvent associé aux frites ?", "Les moules", ["Le waterzooi", "La carbonade", "Les boulettes"], "Les moules-frites sont le plat emblématique belge ; la carbonade flamande est un ragoût à la bière.", 1, ["moules", "moules-frites", "moules frites"]],
+  ["Quelle variété de piment est considérée parmi les plus fortes, cultivée en Caroline du Sud ?", "Le Carolina Reaper", ["Le jalapeño", "Le piment d'Espelette", "Le tabasco"], "Il a longtemps détenu le record du piment le plus fort, avant d'être détrôné par le Pepper X en 2023.", 3, ["Carolina Reaper", "Reaper"]],
+]);

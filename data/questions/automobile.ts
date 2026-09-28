@@ -1,0 +1,20 @@
+import { build } from "./_builder";
+
+export default build("automobile", [
+  ["Quel constructeur automobile a pour emblème un cheval cabré ?", "Ferrari", ["Lamborghini", "Maserati", "Porsche"], "Le cheval cabré était peint sur l'avion de l'as italien Francesco Baracca. Porsche en a un aussi, mais au sein d'un blason.", 1],
+  ["Quel constructeur automobile a pour emblème un taureau ?", "Lamborghini", ["Ferrari", "Bugatti", "Pagani"], "Ferruccio Lamborghini était du signe du Taureau et passionné de corrida.", 1],
+  ["Quel pilote britannique partage avec Michael Schumacher le record de sept titres de champion du monde de F1 ?", "Lewis Hamilton", ["Jenson Button", "Nigel Mansell", "Jackie Stewart"], "Hamilton a décroché ses titres en 2008 puis de 2014 à 2020 (sauf 2016), égalant Schumacher.", 1, ["Hamilton"]],
+  ["Quelle course automobile de 24 heures se déroule dans la Sarthe ?", "Les 24 Heures du Mans", ["Les 24 Heures de Spa", "Les 24 Heures de Daytona", "Le Bol d'or"], "Créée en 1923, c'est la plus ancienne course d'endurance automobile encore disputée.", 1, ["24 Heures du Mans", "Le Mans"]],
+  ["Quel constructeur a produit la « Coccinelle » ?", "Volkswagen", ["Renault", "Fiat", "Citroën"], "Plus de 21 millions de Coccinelle ont été produites entre 1938 et 2003.", 1, ["VW"]],
+  ["Que signifie le sigle « SUV » ?", "Sport Utility Vehicle", ["Super Utility Van", "Special Urban Vehicle", "Sport Urban Van"], "En français, on parle de « véhicule utilitaire sport ».", 2, ["Sport Utility Vehicle"]],
+  ["Quel pilote français a remporté quatre titres de champion du monde de F1 ?", "Alain Prost", ["Jean Alesi", "René Arnoux", "Jacques Laffite"], "Surnommé « le Professeur », Alain Prost a été sacré en 1985, 1986, 1989 et 1993.", 1, ["Prost"]],
+  ["Quel modèle Citroën était surnommé « la Deudeuche » ?", "La 2 CV", ["La DS", "La Traction", "La Méhari"], "La 2 CV devait pouvoir transporter deux paysans et 50 kg de pommes de terre à travers un champ labouré.", 1, ["2CV", "2 CV", "deux chevaux"]],
+  ["Quel rallye-raid célèbre partait initialement de Paris pour rejoindre Dakar ?", "Le Dakar", ["Le rallye Monte-Carlo", "L'Africa Eco Race", "Le rallye des Pharaons"], "Créé par Thierry Sabine en 1978, le Dakar se déroule aujourd'hui en Arabie saoudite.", 1, ["Paris-Dakar", "rallye Dakar"]],
+  ["Quel constructeur automobile possède le logo aux quatre anneaux ?", "Audi", ["Opel", "Toyota", "Alfa Romeo"], "Les quatre anneaux représentent la fusion de 1932 entre Audi, DKW, Horch et Wanderer.", 1],
+  ["Quel pays accueille le circuit de Monza ?", "L'Italie", ["Monaco", "L'Espagne", "La Belgique"], "Surnommé « le temple de la vitesse », Monza accueille le Grand Prix d'Italie.", 2, ["Italie"]],
+  ["Quelle marque automobile appartient au groupe Stellantis ?", "Peugeot", ["Renault", "Toyota", "Volkswagen"], "Stellantis est né en 2021 de la fusion de PSA et de Fiat Chrysler.", 2],
+  ["Quel inventeur allemand a déposé le brevet de la première automobile à moteur en 1886 ?", "Carl Benz", ["Gottlieb Daimler", "Henry Ford", "Rudolf Diesel"], "Sa Benz Patent-Motorwagen, à trois roues, est considérée comme la première automobile moderne.", 3, ["Benz", "Karl Benz"]],
+  ["Dans quelle principauté se court un Grand Prix automobile en pleine ville depuis 1929 ?", "Monaco", ["Le Liechtenstein", "Andorre", "Saint-Marin"], "Le Grand Prix de Monaco, avec son tunnel et son épingle du Fairmont, est l'une des courses les plus prestigieuses du calendrier de F1.", 1],
+  ["Quel est le nom de la célèbre voiture « intelligente » de la série K 2000 ?", "KITT", ["HAL", "Herbie", "Christine"], "KITT est une Pontiac Firebird Trans Am de 1982 qui parle et roule seule.", 2, ["Kitt"]],
+  ["À quoi sert l'ABS sur une voiture ?", "Éviter le blocage des roues au freinage", ["Augmenter la puissance du moteur", "Économiser du carburant", "Stabiliser la suspension"], "L'Antiblockiersystem permet de garder le contrôle de la direction lors d'un freinage d'urgence.", 2, ["antiblocage", "anti blocage", "freinage", "empecher le blocage des roues"]],
+]);

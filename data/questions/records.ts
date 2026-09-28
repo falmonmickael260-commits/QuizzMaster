@@ -1,0 +1,21 @@
+import { build } from "./_builder";
+
+export default build("records", [
+  ["Quel est le plus haut bâtiment du monde ?", "Burj Khalifa", ["Shanghai Tower", "One World Trade Center", "Tokyo Skytree"], "Inaugurée en 2010 à Dubaï, la tour Burj Khalifa mesure 828 m.", 1, ["Burj Khalifa", "Burj Dubai"]],
+  ["Quelle est la plus haute montagne du monde ?", "L'Everest", ["Le K2", "Le Kangchenjunga", "Le Lhotse"], "L'Everest culmine à 8 849 m selon la mesure sino-népalaise de 2020.", 1, ["Everest", "Chomolungma", "Sagarmatha"]],
+  ["Quel est le plus long fleuve d'Afrique ?", "Le Nil", ["Le Congo", "Le Niger", "Le Zambèze"], "Le Nil parcourt environ 6 650 km ; il dispute à l'Amazone le titre de plus long fleuve du monde.", 1, ["Nil"]],
+  ["Quel est l'être humain ayant vécu le plus longtemps, de manière vérifiée ?", "Jeanne Calment", ["Kane Tanaka", "Jiroemon Kimura", "Sarah Knauss"], "La Française Jeanne Calment est morte à Arles en 1997, à 122 ans et 164 jours.", 1, ["Calment"]],
+  ["Quelle est la plus grande île du monde (hors continents) ?", "Le Groenland", ["La Nouvelle-Guinée", "Bornéo", "Madagascar"], "Le Groenland mesure plus de 2 millions de km², quatre fois la France.", 1, ["Groenland"]],
+  ["Quelle est la température la plus basse jamais mesurée sur Terre (arrondie) ?", "-89 °C", ["-72 °C", "-100 °C", "-65 °C"], "Relevée en 1983 à la station Vostok en Antarctique : -89,2 °C.", 3, ["-89", "moins 89", "-89,2"]],
+  ["Quel est le pays le plus vaste du monde ?", "La Russie", ["Le Canada", "La Chine", "Les États-Unis"], "Avec 17 millions de km², la Russie couvre plus d'un neuvième des terres émergées.", 1, ["Russie"]],
+  ["Quel est l'océan le plus grand ?", "L'océan Pacifique", ["L'océan Atlantique", "L'océan Indien", "L'océan Austral"], "Le Pacifique couvre environ un tiers de la surface terrestre, plus que toutes les terres émergées réunies.", 1, ["Pacifique"]],
+  ["Quel nageur français a remporté quatre médailles d'or aux JO de Paris 2024 ?", "Léon Marchand", ["Florent Manaudou", "Maxime Grousset", "Yannick Agnel"], "Léon Marchand a ajouté une médaille de bronze en relais, pour un total de cinq médailles à domicile.", 1, ["Leon Marchand", "Marchand"]],
+  ["Combien de temps a duré le plus long règne d'un monarque en France ?", "72 ans", ["60 ans", "50 ans", "82 ans"], "Louis XIV a régné de 1643 à 1715, soit 72 ans et 110 jours.", 2, ["72"]],
+  ["Quel est l'animal le plus lent du monde parmi les mammifères ?", "Le paresseux", ["Le koala", "Le loris", "Le tatou"], "Le paresseux avance à environ 250 m par heure et descend de son arbre une fois par semaine.", 1, ["paresseux", "ai", "unau"]],
+  ["Quel est le plus grand lac du monde par sa superficie ?", "La mer Caspienne", ["Le lac Supérieur", "Le lac Victoria", "Le lac Baïkal"], "Malgré son nom, la Caspienne est un lac fermé de 371 000 km², plus grand que l'Allemagne.", 3, ["Caspienne", "mer Caspienne"]],
+  ["Quel est le plus grand pays d'Afrique par sa superficie ?", "L'Algérie", ["La République démocratique du Congo", "Le Soudan", "La Libye"], "Depuis la partition du Soudan en 2011, l'Algérie est le plus vaste pays d'Afrique.", 2, ["Algerie"]],
+  ["Quel coureur détient le record du monde du marathon masculin (2 h 00 min 35 s) ?", "Kelvin Kiptum", ["Eliud Kipchoge", "Kenenisa Bekele", "Haile Gebreselassie"], "Kelvin Kiptum l'a établi à Chicago en 2023 ; il est décédé tragiquement en 2024. Kipchoge avait couru sous les 2 h, mais dans des conditions non homologuées.", 3, ["Kiptum"]],
+  ["Quel est l'arbre le plus vieux connu au monde (individuel non clonal) ?", "Un pin Bristlecone", ["Un baobab", "Un séquoia", "Un olivier"], "Le pin « Mathusalem », en Californie, a plus de 4 800 ans.", 4, ["pin", "Bristlecone", "Mathusalem", "pin de Great Basin"]],
+  ["Quel pays a remporté le plus de médailles d'or olympiques de l'histoire ?", "Les États-Unis", ["L'URSS", "La Chine", "L'Allemagne"], "Les États-Unis comptent plus de 1 100 médailles d'or aux Jeux d'été.", 1, ["USA", "Etats-Unis"]],
+  ["Combien de mètres mesure la tour Eiffel, antennes comprises (depuis 2022) ?", "330 m", ["300 m", "312 m", "350 m"], "Elle mesurait 300 m en 1889 ; une nouvelle antenne installée en 2022 l'a portée à 330 m.", 3, ["330", "330 metres"]],
+]);
