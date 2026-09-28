@@ -1,6 +1,7 @@
 // Serveur BLIND QUIZZ : Next.js (interface) + WebSocket (jeu temps réel autoritaire) + API admin, sur un seul port.
 
 import http from "node:http";
+import { loadEnvConfig } from "@next/env";
 import next from "next";
 import { WebSocketServer } from "ws";
 import { createQuestionStore } from "./store";
@@ -9,6 +10,8 @@ import { createAdminHandler } from "./admin/api";
 import { TIMINGS } from "../shared/config";
 
 const dev = process.env.NODE_ENV !== "production";
+// Charge .env, .env.local… comme Next.js (SUPABASE_URL, ADMIN_PASSWORD, etc.)
+loadEnvConfig(process.cwd(), dev);
 const port = Number(process.env.PORT || 3000);
 const hostname = process.env.HOST || "0.0.0.0";
 
