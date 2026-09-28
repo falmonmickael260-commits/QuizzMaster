@@ -52,6 +52,7 @@ export function Console() {
   const priv = useGame((s) => s.priv);
   const playerId = useGame((s) => s.playerId);
   const chooseMode = useGame((s) => s.chooseMode);
+  const setAutopilot = useGame((s) => s.setAutopilot);
   const answer = useGame((s) => s.answer);
   const me = state.players.find((p) => p.id === playerId)!;
   const inQuestion = state.phase === "question" && !!state.question;
@@ -237,7 +238,14 @@ export function Console() {
     <div className="console" aria-label="Écran de votre pupitre">
       <div className="console-head">
         <span className="cam-tag">CAM PUPITRE · {me.name.toUpperCase()}</span>
-        <span className="badges">{badges}</span>
+        <span className="badges">
+          {me.autopilot && (
+            <button className="badge" style={{ cursor: "pointer" }} onClick={() => setAutopilot(false)} title="Reprendre la main">
+              🤖 PILOTE AUTO<span className="hide-xs"> · reprendre la main</span>
+            </button>
+          )}
+          {badges}
+        </span>
       </div>
       <div className="console-screen">
         {q?.text && (state.phase === "question" || (state.phase === "reveal" && locked)) && <div className="console-question">{q.text}</div>}

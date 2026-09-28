@@ -24,16 +24,26 @@ export const CAMERAS = {
   plateau: (): Shot => ({ pos: V(0, 7.2, 20.5), target: V(0, 2.9, -1.2), fov: 42 }),
   // pendant la question : grand écran + candidats + animateur dans le même plan
   plateauClose: (t: number): Shot => ({ pos: V(Math.sin(t * 0.00012) * 1.4, 6.4, 17.5), target: V(0, 3.6, -2.2), fov: 44 }),
-  animateur: (): Shot => ({ pos: V(0.5, 2.85, 4.6), target: V(HOST_POS.x, 2.3, HOST_POS.z), fov: 36, speed: 2.2 }),
+  // gros plan animateur (générique) : cadré à hauteur d'homme, l'écran n'est qu'un fond lumineux
+  animateur: (): Shot => ({ pos: V(0.7, 2.45, 4.4), target: V(HOST_POS.x, 2.2, HOST_POS.z), fov: 30, speed: 2.2 }),
+  // plan d'annonce : l'animateur au premier plan ET le grand écran entier derrière lui
+  annonce: (): Shot => ({ pos: V(0.8, 3.0, 8.2), target: V(0, 4.1, -3), fov: 48, speed: 2 }),
   question: (): Shot => ({ pos: V(0, 5.6, 5.2), target: V(SCREEN_POS.x, SCREEN_POS.y - 0.25, SCREEN_POS.z), fov: 52, speed: 2.4 }),
   roue: (close: boolean): Shot => {
     const c = V(WHEEL_POS.x, WHEEL_CENTER_Y, WHEEL_POS.z);
     const dir = V(2 - WHEEL_POS.x, 0, 12 - WHEEL_POS.z).normalize();
-    return { pos: c.clone().addScaledVector(dir, close ? 6.8 : 9.5).add(V(0, close ? 0.4 : 1.4, 0)), target: c.clone().add(V(close ? 0 : 2.5, close ? 0 : -0.6, 0)), fov: 45, speed: 2 };
+    // roue centrée (pointeur compris) ; en plan large, on aperçoit aussi le plateau à droite
+    const right = V(dir.z, 0, -dir.x);
+    return {
+      pos: c.clone().addScaledVector(dir, close ? 8 : 11).addScaledVector(right, close ? 0 : 1.4).add(V(0, close ? 0.3 : 0.9, 0)),
+      target: c.clone().addScaledVector(right, close ? 0 : 1.6).add(V(0, 0.15, 0)),
+      fov: 42,
+      speed: 2,
+    };
   },
   // plan bas sur la rangée de candidats, grand écran visible au-dessus d'eux
   candidats: (t: number, side: number): Shot => ({
-    pos: V(side * 4.2 + Math.sin(t * 0.0002) * 0.8, 3.1, 11.5),
+    pos: V(side * 3 + Math.sin(t * 0.0002) * 0.8, 3.1, 12),
     target: V(-side * 1.5, 3.4, -3.5),
     fov: 50,
     speed: 1.4,
@@ -41,7 +51,7 @@ export const CAMERAS = {
   classement: (): Shot => ({ pos: V(0, 6.6, 9.5), target: V(SCREEN_POS.x, SCREEN_POS.y - 0.6, SCREEN_POS.z), fov: 52 }),
   joueur: (seat: number): Shot => {
     const c = seatCamera(seat);
-    return { pos: c.pos, target: c.target, fov: 40, speed: 2.4 };
+    return { pos: c.pos, target: c.target, fov: 37, speed: 2.4 };
   },
   // mouvements de grue limités à l'avant du plateau (jamais derrière le décor)
   crane: (t: number): Shot => {
@@ -66,9 +76,9 @@ function directShot(s: PublicRoomState | null, now: number, mySeat: number | nul
       if (t < 4600) return CAMERAS.animateur();
       return CAMERAS.question();
     case "round_intro":
-      return t < 1800 ? CAMERAS.animateur() : CAMERAS.question();
+      return t < 1800 ? CAMERAS.annonce() : CAMERAS.question();
     case "question": {
-      if (!s.question?.text) return CAMERAS.animateur();
+      if (!s.question?.text) return CAMERAS.annonce();
       const sinceStart = now - s.question.startsAt;
       if (sinceStart < 2600) return CAMERAS.question();
       // alternance plateau / candidats, jamais plus de ~4 s sur le même plan
@@ -140,7 +150,9 @@ export function CameraDirector({ state, mySeat, override }: { state: PublicRoomS
       const off = pos.clone().sub(shot.target);
       pos = shot.target.clone().add(off.multiplyScalar(0.55 + 0.45 * f));
       fov = Math.min(70, fov * (0.85 + 0.25 * f));
-      if (aspect < 0.9) target = shot.target.clone().add(V(0, -Math.min(4.5, off.length() * 0.14) * (0.9 - aspect) * 2.4, 0));
+      // tablettes en portrait (0,6–0,9) : on remonte davantage le plateau, qui sinon flotte au milieu d'un grand vide
+      const tablet = aspect > 0.6 && aspect < 0.9 ? 1.4 : 0;
+      if (aspect < 0.9) target = shot.target.clone().add(V(0, -Math.min(4.5, off.length() * 0.14) * (0.9 - aspect) * 2.4 - tablet, 0));
     }
     const k = 1 - Math.exp(-dt * (shot.speed ?? 1.6));
     curPos.current.lerp(pos, k);

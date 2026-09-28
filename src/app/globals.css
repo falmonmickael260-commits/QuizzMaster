@@ -1046,6 +1046,19 @@ button {
 
 /* ─── Responsive ──────────────────────────────────────────────────────── */
 
+@media (max-width: 1100px) {
+  /* le chrono d'antenne occupe le haut-centre : l'info de manche reste dans la console */
+  .bug-info {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .hide-xs {
+    display: none;
+  }
+}
+
 @media (max-width: 820px) {
   .home-card {
     grid-template-columns: 1fr;
