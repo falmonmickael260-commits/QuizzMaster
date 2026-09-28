@@ -51,7 +51,7 @@ export const CAMERAS = {
   classement: (): Shot => ({ pos: V(0, 6.6, 9.5), target: V(SCREEN_POS.x, SCREEN_POS.y - 0.6, SCREEN_POS.z), fov: 52 }),
   joueur: (seat: number): Shot => {
     const c = seatCamera(seat);
-    return { pos: c.pos, target: c.target, fov: 37, speed: 2.4 };
+    return { pos: c.pos, target: c.target, fov: 39, speed: 2.4 };
   },
   // mouvements de grue limités à l'avant du plateau (jamais derrière le décor)
   crane: (t: number): Shot => {
@@ -146,7 +146,8 @@ export function CameraDirector({ state, mySeat, override }: { state: PublicRoomS
     // Écrans étroits (smartphone portrait) : on recule et on élargit pour garder le plateau lisible,
     // et on vise plus bas pour que la scène reste au-dessus de l'écran du pupitre (console en bas).
     if (aspect < 1.5) {
-      const f = Math.min(2.1, 1.5 / aspect);
+      // tablette portrait : on recule moins que sur téléphone pour garder un plateau bien présent
+      const f = Math.min(aspect > 0.6 ? 1.6 : 2.1, 1.5 / aspect);
       const off = pos.clone().sub(shot.target);
       pos = shot.target.clone().add(off.multiplyScalar(0.55 + 0.45 * f));
       fov = Math.min(70, fov * (0.85 + 0.25 * f));

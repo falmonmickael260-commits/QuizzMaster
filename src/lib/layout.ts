@@ -63,7 +63,7 @@ export function seatCamera(seat: number, distance = 5.6, height = 2.9): { pos: T
   // cadre de la tête jusqu'à la façade du pupitre (pseudo + score), voisins hors du premier plan
   const head = seatHead(seat);
   const pos = local(seat, 0.2, height, -0.62 + distance);
-  return { pos, target: head.clone().add(new THREE.Vector3(0, -1.2, 0)) };
+  return { pos, target: head.clone().add(new THREE.Vector3(0, -1.05, 0)) };
 }
 
 export const PLAYER_COLORS = ["#29e7ff", "#ff2e63", "#ffb800", "#2ee59d", "#a66cff", "#ff7a1c", "#3a86ff", "#ff66c4"];
