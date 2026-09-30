@@ -22,6 +22,9 @@ const V = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
 // ─── Caméras du plateau ──────────────────────────────────────────────────────
 export const CAMERAS = {
   plateau: (): Shot => ({ pos: V(0, 7.2, 20.5), target: V(0, 2.9, -1.2), fov: 42 }),
+  // plan fixe de la partie : plateau, écran géant et pupitres dans la moitié haute,
+  // l'habillage (question, réponses, candidats) occupant la moitié basse
+  fixe: (): Shot => ({ pos: V(0, 8.4, 21), target: V(0, 0.6, -2.2), fov: 44 }),
   // pendant la question : grand écran + candidats + animateur dans le même plan
   plateauClose: (t: number): Shot => ({ pos: V(Math.sin(t * 0.00012) * 1.4, 6.4, 17.5), target: V(0, 3.6, -2.2), fov: 44 }),
   // gros plan animateur (générique) : cadré à hauteur d'homme, l'écran n'est qu'un fond lumineux
@@ -126,7 +129,7 @@ function directShot(s: PublicRoomState | null, now: number, mySeat: number | nul
 }
 
 /** Réalisateur : choisit automatiquement la caméra selon la phase et adapte le cadrage à l'écran (mobile). */
-export function CameraDirector({ state, mySeat, override }: { state: PublicRoomState | null; mySeat: number | null; override?: Shot | null }) {
+export function CameraDirector({ state, mySeat, override, fixed = false }: { state: PublicRoomState | null; mySeat: number | null; override?: Shot | null; fixed?: boolean }) {
   const { camera, size } = useThree();
   const curPos = useRef(new THREE.Vector3(0, 9, 26));
   const curTarget = useRef(new THREE.Vector3(0, 3, -2));
@@ -138,7 +141,11 @@ export function CameraDirector({ state, mySeat, override }: { state: PublicRoomS
   }, [camera]);
 
   useFrame((_, dt) => {
-    const shot = override ?? directShot(stateRef.current, serverNow(), mySeat);
+    const shot = override ?? (fixed ? CAMERAS.fixe() : directShot(stateRef.current, serverNow(), mySeat));
+    const aspect0 = size.width / size.height;
+    // plan fixe sur écran peu large (tablette, petit portable) : l'habillage prend plus de hauteur,
+    // on remonte le plateau dans l'image pour garder les pupitres visibles
+    if (fixed && !override && aspect0 < 1.6 && aspect0 >= 0.9) shot.target.y -= Math.min(2, ((1.6 - aspect0) / 0.3) * 1.4);
     const aspect = size.width / size.height;
     let pos = shot.pos.clone();
     let fov = shot.fov;

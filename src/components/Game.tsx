@@ -10,9 +10,9 @@ import { audio } from "@/lib/audio";
 import { markFontsLoaded, setFonts } from "@/lib/draw";
 import Stage, { type Quality } from "./stage/Stage";
 import { Home } from "./ui/Home";
-import { BroadcastTimer, Hud, Toasts } from "./ui/Hud";
+import { Hud, Toasts } from "./ui/Hud";
 import { LobbyPanel } from "./ui/LobbyPanel";
-import { Console } from "./ui/Console";
+import { ModePanel, PlayersBar, QuestionPanel, RoundCard } from "./ui/TvLayout";
 import { WheelControls } from "./ui/WheelControls";
 import { FinalControls } from "./ui/FinalControls";
 import { LowerThird } from "./ui/LowerThird";
@@ -64,14 +64,16 @@ export default function Game() {
 
   return (
     <div className="stage-root" onPointerDown={() => audio.unlock()}>
-      <Stage state={state ?? vitrine} priv={priv} myId={playerId} quality={quality} onQuality={forcedQuality ? undefined : setQuality} onSelectTarget={target} />
+      <Stage state={state ?? vitrine} live={!!state} priv={priv} myId={playerId} quality={quality} onQuality={forcedQuality ? undefined : setQuality} onSelectTarget={target} />
       {!state && !demoPhase && <Home />}
       {state && (
         <>
           <Hud quality={quality} onQuality={setQuality} />
-          <BroadcastTimer />
+          <RoundCard />
           {state.phase === "lobby" && <LobbyPanel />}
-          {me && state.phase !== "lobby" && state.phase !== "final" && !(state.phase === "wheel" && state.wheel?.spinnerId === playerId && (state.wheel.stage === "waiting_spin" || state.wheel.stage === "choose_target")) && <Console />}
+          {me && state.phase !== "lobby" && state.phase !== "final" && !(state.phase === "wheel" && state.wheel?.spinnerId === playerId && (state.wheel.stage === "waiting_spin" || state.wheel.stage === "choose_target")) && <QuestionPanel />}
+          {me && <ModePanel />}
+          {state.phase !== "lobby" && state.phase !== "final" && <PlayersBar />}
           {state.phase === "wheel" && <WheelControls />}
           {state.phase === "final" && <FinalControls />}
           <LowerThird />
