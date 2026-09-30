@@ -5,38 +5,15 @@ import { serverNow, useGame } from "@/lib/net";
 import { audio } from "@/lib/audio";
 import type { Quality } from "../stage/Stage";
 
-const PHASE_LABEL: Record<string, string> = {
-  lobby: "PLATEAU OUVERT",
-  intro: "GÉNÉRIQUE",
-  round_intro: "NOUVELLE MANCHE",
-  question: "QUESTION",
-  reveal: "RÉPONSE",
-  leaderboard: "CLASSEMENT",
-  wheel: "ROUE BONUS / MALUS",
-  final: "GRANDE FINALE",
-};
-
-/** « Habillage antenne » : logo, direct, progression, réglages. */
+/** Réglages du plateau (haut droite) : son, qualité graphique, quitter. */
 export function Hud({ quality, onQuality }: { quality: Quality; onQuality: (q: Quality) => void }) {
   const state = useGame((s) => s.state);
   const leave = useGame((s) => s.leave);
   const [muted, setMuted] = useState(audio.muted);
   if (!state) return null;
-  const info =
-    state.phase === "lobby"
-      ? `${state.code} · ${state.players.length}/8 CANDIDATS`
-      : state.phase === "final"
-        ? PHASE_LABEL.final
-        : `MANCHE ${state.round}/${state.totalRounds} · Q${Math.max(1, state.questionNumber)}/${state.totalQuestions} · ${PHASE_LABEL[state.phase]}`;
   return (
     <div className="hud-top">
-      <div className="bug glass">
-        <span className="live-dot">DIRECT</span>
-        <span className="bug-logo display">
-          <span style={{ color: "#fff" }}>BLIND</span> <span style={{ color: "var(--coral)" }}>QUIZZ</span>
-        </span>
-        <span className="bug-info">{info}</span>
-      </div>
+      <span />
       <div className="hud-actions">
         <button
           className="btn ghost icon-btn"
@@ -61,7 +38,7 @@ export function Hud({ quality, onQuality }: { quality: Quality; onQuality: (q: Q
             if (confirm("Quitter le plateau ?")) leave();
           }}
         >
-          ⏏
+          ⏏<span className="hud-quit-label"> Quitter</span>
         </button>
       </div>
     </div>

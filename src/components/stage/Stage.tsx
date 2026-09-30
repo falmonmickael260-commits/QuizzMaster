@@ -17,6 +17,8 @@ export type Quality = "high" | "low";
 
 interface StageProps {
   state: PublicRoomState | null;
+  /** Vraie partie en cours (et non plateau vitrine) : caméra fixe. */
+  live?: boolean;
   priv: PrivateState | null;
   myId: string | null;
   quality: Quality;
@@ -49,7 +51,7 @@ const FPS_LIMIT = typeof window !== "undefined" ? Number(new URLSearchParams(loc
 // abaissée par paliers si la fluidité baisse, puis passage en qualité légère en dernier recours.
 const MAX_DPR = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 1;
 
-export default function Stage({ state, priv, myId, quality, onQuality, onSelectTarget }: StageProps) {
+export default function Stage({ state, live = false, priv, myId, quality, onQuality, onSelectTarget }: StageProps) {
   useTicker(250);
   const [dpr, setDpr] = useState(() => (quality === "high" ? MAX_DPR : Math.min(MAX_DPR, 1.25)));
   useEffect(() => setDpr(quality === "high" ? MAX_DPR : Math.min(MAX_DPR, 1.25)), [quality]);
@@ -121,7 +123,7 @@ export default function Stage({ state, priv, myId, quality, onQuality, onSelectT
           );
         })}
         <Confetti active={state?.phase === "final" && finalT > 2800} />
-        <CameraDirector state={state} mySeat={me?.seat ?? null} />
+        <CameraDirector state={state} mySeat={me?.seat ?? null} fixed={live} />
         {/* tampons 8 bits : une valeur invalide isolée (NaN) ne peut plus se propager à tout l'écran via le flou du bloom */}
         {quality === "high" && !DEBUG_FX.includes("nobloom") && (
           <EffectComposer multisampling={0} frameBufferType={THREE.UnsignedByteType}>
