@@ -490,7 +490,7 @@ function drawFinal(ctx: Ctx, w: number, h: number, s: PublicRoomState, t: number
     ctx.fillStyle = C.amber;
     font(ctx, h * 0.04, "text", 900);
     const winner = playerName(s, rows[0]?.playerId).toUpperCase();
-    ctx.fillText(`👑 ${winner} REMPORTE BLIND QUIZZ ! 👑`, w / 2, h * 0.95);
+    ctx.fillText(`👑 ${winner} REMPORTE QUIZZ MASTER ! 👑`, w / 2, h * 0.95);
   }
 }
 

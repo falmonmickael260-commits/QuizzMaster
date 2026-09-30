@@ -8,17 +8,20 @@ import { getCharacter } from "@shared/characters";
 import type { PrivateState, PublicPlayer, PublicRoomState } from "@shared/types";
 import { drawPodiumFront, drawPodiumTop, podiumFrontSig, podiumTopSig } from "@/lib/screens";
 import { candidateMood } from "@/lib/mood";
-import { SEATS } from "@/lib/layout";
+import { SEATS, type Seat } from "@/lib/layout";
 import { serverNow } from "@/lib/net";
 import { Character } from "./Character";
 import { SCREEN_TINT, useCanvasTexture } from "./useCanvasTexture";
 
-const BODY_MAT = new THREE.MeshStandardMaterial({ color: "#0c1236", roughness: 0.28, metalness: 0.55 });
-const TRIM_MAT = new THREE.MeshStandardMaterial({ color: "#1b2566", roughness: 0.3, metalness: 0.7 });
+// pupitres noir laqué à liseré doré, façon grand plateau TV
+const BODY_MAT = new THREE.MeshPhysicalMaterial({ color: "#080b18", roughness: 0.18, metalness: 0.35, clearcoat: 1, clearcoatRoughness: 0.1 });
+const TRIM_MAT = new THREE.MeshStandardMaterial({ color: "#d9a93c", roughness: 0.22, metalness: 1, emissive: "#6b4608", emissiveIntensity: 0.5 });
 const CASE_MAT = new THREE.MeshStandardMaterial({ color: "#10131f", roughness: 0.4, metalness: 0.6 });
 
 interface Props {
   seat: number;
+  /** Emplacement sur le plateau (par défaut : place fixe du siège). */
+  place?: Seat;
   player: PublicPlayer | null;
   state: PublicRoomState | null;
   priv: PrivateState | null;
@@ -29,8 +32,8 @@ interface Props {
 }
 
 /** Un emplacement de candidat : pupitre 3D + écrans intégrés + personnage installé derrière. */
-export function CandidateSeat({ seat, player, state, priv, color, isMe, selectable, onSelect }: Props) {
-  const s = SEATS[seat];
+export function CandidateSeat({ seat, place, player, state, priv, color, isMe, selectable, onSelect }: Props) {
+  const s = place ?? SEATS[seat];
   const frontTex = useCanvasTexture(
     1024,
     512,

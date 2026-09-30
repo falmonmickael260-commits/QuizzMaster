@@ -78,8 +78,8 @@ export function Home() {
         <div className="stack" style={{ alignContent: "start" }}>
           <div>
             <h1 className="home-logo display">
-              <span className="logo-blind">BLIND</span>
-              <span className="logo-quizz">QUIZZ</span>
+              <span className="logo-blind">QUIZZ</span>
+              <span className="logo-quizz">MASTER</span>
             </h1>
             <p className="tagline">
               Le jeu télévisé où <b style={{ color: "#fff" }}>vous choisissez votre aide</b>. 12 secondes par question, jusqu&apos;à 8 candidats sur le plateau, une roue qui

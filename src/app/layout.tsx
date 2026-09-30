@@ -6,7 +6,7 @@ const anton = Anton({ weight: "400", subsets: ["latin"], variable: "--font-anton
 const outfit = Outfit({ weight: ["500", "600", "700", "800", "900"], subsets: ["latin"], variable: "--font-outfit", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "BLIND QUIZZ — le jeu TV multijoueur",
+  title: "QUIZZ MASTER — le jeu TV multijoueur",
   description: "Un vrai plateau de jeu télévisé en 3D : 12 secondes, trois niveaux d'aide (4, 2 ou SOLO), une roue bonus/malus et vos amis en direct.",
 };
 

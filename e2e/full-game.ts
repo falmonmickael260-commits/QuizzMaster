@@ -118,25 +118,25 @@ async function shot(page: Page, name: string) {
 
 type Plan = { mode: "4" | "2" | "solo" | null; correct: boolean };
 
-/** Joue une question dans le navigateur, via l'écran du pupitre (console). */
+/** Joue une question dans le navigateur, via le panneau de question (choix de l'aide puis réponse). */
 async function playInBrowser(page: Page, plan: Plan, s: PublicRoomState) {
   if (!plan.mode) return;
   const seed = answers.get(s.question!.text)!;
   const idx = { "2": 0, "4": 1, solo: 2 }[plan.mode]; // ordre des boutons : 2 · 4 · SOLO
-  await page.locator(".mode-btn").nth(idx).click({ timeout: 8000, force: true });
+  await page.locator(".tv-mode:visible").nth(idx).click({ timeout: 8000, force: true });
   if (plan.mode === "solo") {
-    const input = page.locator(".solo-form input");
+    const input = page.locator(".tv-solo input");
     await input.waitFor({ timeout: 8000 });
     // saisie volontairement « sale » pour vérifier la tolérance (minuscules, sans accents)
     const typed = plan.correct ? seed.correctAnswer.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "") : "zzz mauvaise";
     await input.fill(typed);
     await input.press("Enter");
   } else {
-    await page.locator(".option-btn").first().waitFor({ timeout: 8000 });
-    const texts = await page.locator(".option-btn").allInnerTexts();
+    await page.locator(".tv-answer").first().waitFor({ timeout: 8000 });
+    const texts = await page.locator(".tv-answer").allInnerTexts();
     const clean = texts.map((t) => t.replace(/^[A-D]\s*/, "").trim());
     const wanted = plan.correct ? clean.findIndex((t) => t === seed.correctAnswer) : clean.findIndex((t) => t !== seed.correctAnswer);
-    await page.locator(".option-btn").nth(Math.max(0, wanted)).click({ force: true });
+    await page.locator(".tv-answer").nth(Math.max(0, wanted)).click({ force: true });
   }
 }
 

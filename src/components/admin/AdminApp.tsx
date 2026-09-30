@@ -138,8 +138,8 @@ export default function AdminApp() {
           }}
         >
           <h1 className="display" style={{ margin: 0 }}>
-            <span className="logo-blind">BLIND</span>
-            <span className="logo-quizz">QUIZZ</span> <span style={{ fontSize: 20, color: "var(--dim)" }}>RÉGIE</span>
+            <span className="logo-blind">QUIZZ</span>
+            <span className="logo-quizz">MASTER</span> <span style={{ fontSize: 20, color: "var(--dim)" }}>RÉGIE</span>
           </h1>
           <label className="label" htmlFor="pwd">
             Mot de passe admin
@@ -196,8 +196,8 @@ export default function AdminApp() {
       <div className="admin-wrap">
         <div className="admin-head">
           <h1 className="display">
-            <span className="logo-blind">BLIND</span>
-            <span className="logo-quizz">QUIZZ</span> <span style={{ fontSize: 22, color: "var(--dim)" }}>· RÉGIE DES QUESTIONS</span>
+            <span className="logo-blind">QUIZZ</span>
+            <span className="logo-quizz">MASTER</span> <span style={{ fontSize: 22, color: "var(--dim)" }}>· RÉGIE DES QUESTIONS</span>
           </h1>
           <div className="row" style={{ flexWrap: "wrap" }}>
             <a className="btn ghost small" href="/">

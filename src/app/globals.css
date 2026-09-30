@@ -196,6 +196,7 @@ button {
 }
 
 .logo-blind::after {
+  display: none;
   content: "";
   position: absolute;
   left: -6%;
@@ -209,8 +210,8 @@ button {
 }
 
 .logo-quizz {
-  color: var(--coral);
-  text-shadow: 0 0 28px rgba(255, 46, 99, 0.6);
+  color: #ffc94a;
+  text-shadow: 0 0 28px rgba(255, 190, 60, 0.6);
   margin-left: 0.18em;
 }
 
@@ -1795,5 +1796,14 @@ button.tv-badge {
   }
   .tv-tally {
     width: 200px;
+  }
+}
+@media (max-width: 760px) {
+  .tv-solo {
+    flex-direction: column;
+  }
+  .tv-solo input,
+  .tv-solo button {
+    height: 48px;
   }
 }

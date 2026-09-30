@@ -142,52 +142,26 @@ export function screenBackground(ctx: Ctx, w: number, h: number, tint = C.bg2, t
   ctx.restore();
 }
 
-/** Logo BLIND QUIZZ : « BLIND » barré d'un bandeau (le « blind »), « QUIZZ » en corail. */
-export function drawLogo(ctx: Ctx, cx: number, cy: number, size: number, t = 0) {
+/** Logo QUIZZ MASTER : « QUIZZ » en blanc, « MASTER » en or. */
+export function drawLogo(ctx: Ctx, cx: number, cy: number, size: number, _t = 0) {
   ctx.save();
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   font(ctx, size, "display");
-  const blindW = ctx.measureText("BLIND").width;
-  const quizzW = ctx.measureText("QUIZZ").width;
-  const gap = size * 0.18;
-  const total = blindW + gap + quizzW;
-  const x0 = cx - total / 2;
-  // BLIND
-  glow(ctx, C.cyan, size * 0.35);
+  const aW = ctx.measureText("QUIZZ").width;
+  const bW = ctx.measureText("MASTER").width;
+  const gap = size * 0.2;
+  const x0 = cx - (aW + gap + bW) / 2;
+  glow(ctx, "#5aa8ff", size * 0.3);
   ctx.fillStyle = C.white;
-  ctx.fillText("BLIND", x0 + blindW / 2, cy);
-  // bandeau
-  noGlow(ctx);
-  ctx.save();
-  ctx.translate(x0 + blindW / 2, cy - size * 0.04);
-  ctx.rotate(-0.08);
-  const bandH = size * 0.26;
-  const bg = ctx.createLinearGradient(-blindW / 2, 0, blindW / 2, 0);
-  bg.addColorStop(0, C.cyan);
-  bg.addColorStop(1, "#1a8cff");
-  ctx.fillStyle = bg;
-  glow(ctx, C.cyan, size * 0.3);
-  rr(ctx, -blindW / 2 - size * 0.12, -bandH / 2, blindW + size * 0.24, bandH, bandH / 2);
-  ctx.fill();
-  noGlow(ctx);
-  // nœud du bandeau
-  ctx.fillStyle = "#1a8cff";
-  ctx.beginPath();
-  ctx.moveTo(blindW / 2 + size * 0.1, 0);
-  ctx.lineTo(blindW / 2 + size * 0.34, -bandH * 0.9 + Math.sin(t / 300) * size * 0.03);
-  ctx.lineTo(blindW / 2 + size * 0.3, bandH * 0.1);
-  ctx.lineTo(blindW / 2 + size * 0.38, bandH * 0.9 + Math.cos(t / 280) * size * 0.03);
-  ctx.closePath();
-  ctx.fill();
-  ctx.restore();
-  // QUIZZ
-  glow(ctx, C.coral, size * 0.35);
-  const qg = ctx.createLinearGradient(0, cy - size / 2, 0, cy + size / 2);
-  qg.addColorStop(0, "#ff7a9c");
-  qg.addColorStop(1, C.coral);
-  ctx.fillStyle = qg;
-  ctx.fillText("QUIZZ", x0 + blindW + gap + quizzW / 2, cy);
+  ctx.fillText("QUIZZ", x0 + aW / 2, cy);
+  const g = ctx.createLinearGradient(0, cy - size / 2, 0, cy + size / 2);
+  g.addColorStop(0, "#fff1b0");
+  g.addColorStop(0.5, "#ffc94a");
+  g.addColorStop(1, "#d98e1c");
+  glow(ctx, "#ffb52e", size * 0.3);
+  ctx.fillStyle = g;
+  ctx.fillText("MASTER", x0 + aW + gap + bW / 2, cy);
   ctx.restore();
 }
 
