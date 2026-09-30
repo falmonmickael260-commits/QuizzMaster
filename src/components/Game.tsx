@@ -8,7 +8,8 @@ import { WHEEL_SEGMENTS } from "@shared/wheel";
 import { useGame } from "@/lib/net";
 import { audio } from "@/lib/audio";
 import { markFontsLoaded, setFonts } from "@/lib/draw";
-import Stage, { type Quality } from "./stage/Stage";
+import type { Quality } from "./stage/Stage";
+import ImageStage from "./stage/ImageStage";
 import { Home } from "./ui/Home";
 import { Hud, Toasts } from "./ui/Hud";
 import { LobbyPanel } from "./ui/LobbyPanel";
@@ -64,7 +65,7 @@ export default function Game() {
 
   return (
     <div className="stage-root" onPointerDown={() => audio.unlock()}>
-      <Stage state={state ?? vitrine} live={!!state} priv={priv} myId={playerId} quality={quality} onQuality={forcedQuality ? undefined : setQuality} onSelectTarget={target} />
+      <ImageStage state={state ?? vitrine} priv={priv} myId={playerId} onSelectTarget={target} />
       {!state && !demoPhase && <Home />}
       {state && (
         <>
