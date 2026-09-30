@@ -12,6 +12,7 @@ import { serverNow, useGame } from "@/lib/net";
 import { formatScore } from "@/lib/draw";
 import { PLAYER_COLORS } from "@/lib/layout";
 import { audio } from "@/lib/audio";
+import { Avatar } from "./Avatar";
 
 // ─── Outils ───────────────────────────────────────────────────────────────────
 
@@ -63,23 +64,6 @@ function useResultsHistory(state: PublicRoomState) {
 /** Le verdict n'est montré qu'après l'écran « réponses verrouillées ». */
 function revealVisible(state: PublicRoomState, now: number) {
   return state.phase !== "reveal" || now - state.phaseStartedAt >= REVEAL_LOCK_MS;
-}
-
-function Pawn({ color, size = 34 }: { color: string; size?: number }) {
-  return (
-    <svg className="tv-pawn" width={size} height={size * 1.15} viewBox="0 0 40 46" aria-hidden>
-      <defs>
-        <radialGradient id={`pw-${color.slice(1)}`} cx="35%" cy="30%" r="75%">
-          <stop offset="0" stopColor="#fff" stopOpacity="0.75" />
-          <stop offset="0.35" stopColor={color} />
-          <stop offset="1" stopColor={color} stopOpacity="0.75" />
-        </radialGradient>
-      </defs>
-      <circle cx="20" cy="11" r="9" fill={`url(#pw-${color.slice(1)})`} />
-      <path d="M8 44c0-10 4-18 12-18s12 8 12 18z" fill={`url(#pw-${color.slice(1)})`} />
-      <ellipse cx="20" cy="44" rx="14" ry="2.5" fill="#000" opacity="0.35" />
-    </svg>
-  );
 }
 
 // ─── Carte de manche (haut gauche) ───────────────────────────────────────────
@@ -415,7 +399,7 @@ export function PlayersBar() {
         {[...state.players]
           .sort((a, b) => a.seat - b.seat)
           .map((p) => (
-            <PlayerCard key={p.id} name={p.name} color={PLAYER_COLORS[p.seat % PLAYER_COLORS.length]} score={p.score - (!verdict ? (state.reveal?.results[p.id]?.points ?? 0) : 0)} me={p.id === playerId} leader={p.score === leaderScore && leaderScore > 0} answered={state.phase === "question" && p.answered} offline={!p.connected} dots={Array.from({ length: QUESTIONS_PER_ROUND }, (_, i) => {
+            <PlayerCard key={p.id} character={p.character} name={p.name} color={PLAYER_COLORS[p.seat % PLAYER_COLORS.length]} score={p.score - (!verdict ? (state.reveal?.results[p.id]?.points ?? 0) : 0)} me={p.id === playerId} leader={p.score === leaderScore && leaderScore > 0} answered={state.phase === "question" && p.answered} offline={!p.connected} dots={Array.from({ length: QUESTIONS_PER_ROUND }, (_, i) => {
               const res = hist.get(roundStart + i)?.[p.id];
               if (!res || (!verdict && roundStart + i === state.reveal?.questionIndex)) return "";
               return res.correct ? "good" : "bad";
@@ -438,11 +422,11 @@ export function PlayersBar() {
   );
 }
 
-function PlayerCard({ name, color, score, me, leader, answered, offline, dots }: { name: string; color: string; score: number; me: boolean; leader: boolean; answered: boolean; offline: boolean; dots: string[] }) {
+function PlayerCard({ character, name, color, score, me, leader, answered, offline, dots }: { character: string; name: string; color: string; score: number; me: boolean; leader: boolean; answered: boolean; offline: boolean; dots: string[] }) {
   const shown = useRolling(score);
   return (
     <div className={`tv-player tv-glass ${me ? "me" : ""} ${offline ? "offline" : ""}`} style={{ ["--pc" as string]: color }}>
-      <Pawn color={color} />
+      <Avatar character={character} size={46} ring={color} />
       <div className="tv-player-info">
         <div className="tv-player-name">
           {name}

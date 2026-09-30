@@ -19,6 +19,7 @@ import { serverNow } from "@/lib/net";
 import { audio } from "@/lib/audio";
 import { Character } from "./Character";
 import { HOST_PRESET } from "./SetPieces";
+import { Avatar } from "../ui/Avatar";
 
 export const DECOR = { src: "/decor/plateau.webp", w: 1671, h: 941 };
 
@@ -128,6 +129,7 @@ function ChairTags({ state, myId, onSelect }: { state: PublicRoomState | null; m
             disabled={!selectable}
             onClick={() => selectable && onSelect?.(p.id)}
           >
+            <Avatar character={p.character} size={40} ring={color} />
             <span className="dec-tag-name">{p.name}</span>
             <span className="dec-tag-score">{formatScore(shown)}</span>
           </button>

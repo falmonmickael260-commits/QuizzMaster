@@ -14,7 +14,7 @@ import {
   TIMINGS,
   type AnswerMode,
 } from "../../shared/config";
-import { CHARACTER_BY_ID } from "../../shared/characters";
+import { CHARACTER_BY_ID, isValidCharacter } from "../../shared/characters";
 import type {
   ClientMessage,
   GameEvent,
@@ -160,7 +160,7 @@ export class Room {
       id: crypto.randomUUID(),
       token: crypto.randomBytes(18).toString("base64url"),
       name: finalName,
-      character: CHARACTER_BY_ID[character] ? character : "nova",
+      character: isValidCharacter(character) ? character : "nova",
       seat,
       score: 0,
       connected: true,

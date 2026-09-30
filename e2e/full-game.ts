@@ -160,7 +160,7 @@ async function main() {
   log("1. LOBBY — Alex crée la partie");
   await A.goto(`${BASE}/?quality=${process.env.QUALITY || "high"}&fps=${process.env.FPS || 6}`, { waitUntil: "networkidle", timeout: 180_000 });
   await A.fill("#pseudo", "Alex", { timeout: 180_000 });
-  await A.locator(".rounds button").nth(ROUNDS - 1).click({ force: true });
+  await A.locator(".menu-rounds button").nth(ROUNDS - 1).click({ force: true });
   await A.click("text=Créer une émission", { force: true });
   const lobby = await waitFor(A, (s) => s.phase === "lobby", "création de la room");
   const code = lobby.code;
@@ -170,8 +170,11 @@ async function main() {
   log("2. CHOIX DU PERSONNAGE — Sarah rejoint sur smartphone, 2 bots rejoignent");
   await B.goto(`${BASE}/?room=${code}&quality=low&fps=${process.env.FPS || 6}`, { waitUntil: "networkidle", timeout: 180_000 });
   await B.fill("#pseudo", "Sarah", { timeout: 180_000 });
-  await B.locator(".char-btn").nth(6).click({ force: true });
-  await B.click("text=Rejoindre le plateau", { force: true });
+  await B.locator(".menu-face").nth(6).click({ force: true });
+  // personnalisation : un casque sur le personnage (code personnalisé validé par le serveur)
+  await B.click('button[aria-label="Accessoire"]', { force: true });
+  await B.click('.menu-chips button:has-text("Casque")', { force: true });
+  await B.click(".menu-cta.teal", { force: true });
   const botPlans: Record<string, (qi: number) => Plan> = {
     Lucas: () => ({ mode: "2", correct: Math.random() < 0.5 }),
     Emma: (qi) => (qi < 2 ? { mode: null, correct: false } : { mode: "2", correct: Math.random() < 0.5 }),
@@ -180,6 +183,7 @@ async function main() {
   const full = await waitFor(A, (s) => s.players.length === 4, "4 candidats");
   check(full.players.map((p) => p.seat).sort().join() === "0,1,2,3", "chaque candidat a son propre pupitre (sièges 0-3)");
   const seatsAtStart = Object.fromEntries(full.players.map((p) => [p.id, p.seat]));
+  check(full.players.find((p) => p.name === "Sarah")?.character.startsWith("c-") ?? false, "personnage personnalisé accepté par le serveur (code c-…)");
   const idA = (await getMyId(A))!;
   const idB = (await getMyId(B))!;
   await sleep(2500);

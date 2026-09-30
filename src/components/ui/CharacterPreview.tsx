@@ -23,9 +23,9 @@ function Turntable({ preset }: { preset: CharacterPreset }) {
 }
 
 /** Aperçu 3D du personnage choisi, sur son socle lumineux. */
-export function CharacterPreview({ preset }: { preset: CharacterPreset }) {
+export function CharacterPreview({ preset, distance = 4.2 }: { preset: CharacterPreset; distance?: number }) {
   return (
-    <Canvas dpr={[1, 1.5]} camera={{ position: [0, 0.9, 4.2], fov: 32 }} gl={{ antialias: true }}>
+    <Canvas dpr={[1, 1.5]} camera={{ position: [0, 0.9, distance], fov: 32 }} gl={{ antialias: true, alpha: true }}>
       <ambientLight intensity={0.6} color="#8090ff" />
       <directionalLight position={[2, 4, 5]} intensity={2.2} />
       <pointLight position={[-3, 2, 1]} intensity={20} color="#29e7ff" />
