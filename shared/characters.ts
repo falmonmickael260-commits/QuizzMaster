@@ -34,5 +34,107 @@ export const CHARACTERS: CharacterPreset[] = [
 export const CHARACTER_BY_ID: Record<string, CharacterPreset> = Object.fromEntries(CHARACTERS.map((c) => [c.id, c]));
 
 export function getCharacter(id: string | undefined): CharacterPreset {
-  return (id && CHARACTER_BY_ID[id]) || CHARACTERS[0];
+  return resolveCharacter(id);
+}
+
+// ─── Personnalisation ────────────────────────────────────────────────────────
+// Un personnage personnalisé est transmis sous la forme d'un code compact :
+//   c-<base>-<coiffure>-<cheveux>-<peau>-<tenue>-<accessoire>-<couleurAccessoire>
+// (index dans les palettes ci-dessous). Le serveur n'accepte que des codes valides.
+
+export const SKIN_TONES = ["#fbe0cc", "#f5d0b5", "#f2c7a5", "#e9b98f", "#d6a07a", "#c68a62", "#8d5a3b", "#6b4029"];
+export const HAIR_COLORS = ["#0d0d12", "#1b1210", "#3b2416", "#7a2e1b", "#c9632d", "#e8c26a", "#d9d4c7", "#ff66c4", "#29e7ff", "#9b5de5"];
+export const OUTFIT_COLORS = ["#ff4d6d", "#1fb6ff", "#ffd23f", "#2ee59d", "#9b5de5", "#ff7a1c", "#ff66c4", "#3a86ff", "#00c2a8", "#e63946", "#7b2cbf", "#222831"];
+export const ACCESSORY_COLORS = ["#ffffff", "#16161a", "#ff3b5c", "#29e7ff", "#ff9f1c", "#c9a227", "#2ee59d", "#9b5de5"];
+export const HAIR_STYLES: HairStyle[] = ["short", "spiky", "long", "ponytail", "curly", "bun", "buzz", "afro", "bob"];
+export const ACCESSORIES: Accessory[] = ["none", "headphones", "cap", "beanie", "glasses", "roundGlasses", "headband"];
+
+export const HAIR_STYLE_LABELS: Record<HairStyle, string> = {
+  short: "Courts",
+  spiky: "En pics",
+  long: "Longs",
+  ponytail: "Queue",
+  curly: "Bouclés",
+  bun: "Chignon",
+  buzz: "Rasés",
+  afro: "Afro",
+  bob: "Carré",
+};
+export const ACCESSORY_LABELS: Record<Accessory, string> = {
+  none: "Aucun",
+  headphones: "Casque",
+  cap: "Casquette",
+  beanie: "Bonnet",
+  glasses: "Lunettes",
+  roundGlasses: "Lunettes rondes",
+  headband: "Bandeau",
+};
+
+export interface CharacterLook {
+  base: string;
+  hairStyle: HairStyle;
+  hair: number;
+  skin: number;
+  outfit: number;
+  accessory: Accessory;
+  accessoryColor: number;
+}
+
+const idx = (list: string[], color: string) => Math.max(0, list.indexOf(color));
+
+/** Apparence modifiable d'un personnage (preset ou code personnalisé). */
+export function lookOf(id: string): CharacterLook {
+  const p = getCharacter(id);
+  const base = parseCustom(id)?.base ?? p.id;
+  return {
+    base,
+    hairStyle: p.hairStyle,
+    hair: idx(HAIR_COLORS, p.hair),
+    skin: idx(SKIN_TONES, p.skin),
+    outfit: idx(OUTFIT_COLORS, p.outfit),
+    accessory: p.accessory,
+    accessoryColor: idx(ACCESSORY_COLORS, p.accessoryColor),
+  };
+}
+
+export function encodeLook(l: CharacterLook): string {
+  return ["c", l.base, HAIR_STYLES.indexOf(l.hairStyle), l.hair, l.skin, l.outfit, ACCESSORIES.indexOf(l.accessory), l.accessoryColor].join("-");
+}
+
+function parseCustom(id: string): CharacterLook | null {
+  const m = /^c-([a-z]{2,12})-(\d)-(\d{1,2})-(\d{1,2})-(\d{1,2})-(\d)-(\d{1,2})$/.exec(id);
+  if (!m || !CHARACTER_BY_ID[m[1]]) return null;
+  const [hs, hair, skin, outfit, acc, accColor] = m.slice(2).map(Number);
+  if (!HAIR_STYLES[hs] || hair >= HAIR_COLORS.length || skin >= SKIN_TONES.length || outfit >= OUTFIT_COLORS.length || !ACCESSORIES[acc] || accColor >= ACCESSORY_COLORS.length) return null;
+  return { base: m[1], hairStyle: HAIR_STYLES[hs], hair, skin, outfit, accessory: ACCESSORIES[acc], accessoryColor: accColor };
+}
+
+/** Accepte un identifiant de preset ou un code de personnage personnalisé valide. */
+export function isValidCharacter(id: unknown): id is string {
+  return typeof id === "string" && id.length <= 40 && (!!CHARACTER_BY_ID[id] || !!parseCustom(id));
+}
+
+function lighten(hex: string, k: number) {
+  const n = parseInt(hex.slice(1), 16);
+  const ch = (s: number) => Math.round(((n >> s) & 255) + (255 - ((n >> s) & 255)) * k);
+  return `#${((ch(16) << 16) | (ch(8) << 8) | ch(0)).toString(16).padStart(6, "0")}`;
+}
+
+/** Preset complet d'un personnage (preset d'origine ou personnalisé). */
+export function resolveCharacter(id: string | undefined): CharacterPreset {
+  const custom = id ? parseCustom(id) : null;
+  if (!custom) return (id && CHARACTER_BY_ID[id]) || CHARACTERS[0];
+  const base = CHARACTER_BY_ID[custom.base];
+  const outfit = OUTFIT_COLORS[custom.outfit];
+  return {
+    ...base,
+    id: id!,
+    hairStyle: custom.hairStyle,
+    hair: HAIR_COLORS[custom.hair],
+    skin: SKIN_TONES[custom.skin],
+    outfit,
+    outfitAccent: lighten(outfit, 0.82),
+    accessory: custom.accessory,
+    accessoryColor: ACCESSORY_COLORS[custom.accessoryColor],
+  };
 }

@@ -65,7 +65,7 @@ export default function Game() {
 
   return (
     <div className="stage-root" onPointerDown={() => audio.unlock()}>
-      <ImageStage state={state ?? vitrine} priv={priv} myId={playerId} onSelectTarget={target} />
+      {(state || demoPhase) && <ImageStage state={state ?? vitrine} priv={priv} myId={playerId} onSelectTarget={target} />}
       {!state && !demoPhase && <Home />}
       {state && (
         <>
