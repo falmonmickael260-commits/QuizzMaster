@@ -69,19 +69,25 @@ export function seatCamera(seat: number, distance = 5.6, height = 2.9): { pos: T
 export const PLAYER_COLORS = ["#29e7ff", "#ff2e63", "#ffb800", "#2ee59d", "#a66cff", "#ff7a1c", "#3a86ff", "#ff66c4"];
 
 /**
- * Placement des pupitres sur le plateau TV : répartis de part et d'autre de la scène centrale
- * selon le nombre de candidats (2 à 8), pour occuper toute la largeur du plateau.
+ * Placement des pupitres sur le plateau TV : en fer à cheval serré autour de la scène centrale,
+ * ouvert vers le public (la caméra), pour que la caméra puisse cadrer tout le monde de près.
  */
-const TV_SIDE_ANGLES: Record<number, number[]> = { 1: [24], 2: [24, 46], 3: [18, 36, 54], 4: [16.5, 29, 41.5, 54] };
+const HORSESHOE_CENTER = new THREE.Vector3(0, 0, -1.6);
+const HORSESHOE_RADIUS = 6.1;
+const HORSESHOE_FIRST = 22;
+const HORSESHOE_STEP = 24.5;
 
 export function tvSeat(order: number, count: number): Seat {
   const perSide = Math.ceil(Math.max(count, 2) / 2);
-  const angles = TV_SIDE_ANGLES[Math.min(4, perSide)];
   const side = order % 2 === 0 ? -1 : 1;
-  const deg = side * angles[Math.min(angles.length - 1, Math.floor(order / 2))];
+  const k = Math.floor(order / 2);
+  // peu de candidats : un peu plus espacés, toujours symétriques
+  const step = perSide <= 2 ? HORSESHOE_STEP * 1.35 : HORSESHOE_STEP;
+  const deg = side * (HORSESHOE_FIRST + k * step);
   const a = THREE.MathUtils.degToRad(deg);
-  // arc en retrait, entre la scène centrale et le grand écran ; pupitres tournés vers le public
-  const position = new THREE.Vector3(Math.sin(a) * 10, 0, 5 - Math.cos(a) * 10);
-  const dir = new THREE.Vector3().subVectors(new THREE.Vector3(0, 0, 14), position);
+  // angle mesuré depuis le fond du plateau (côté grand écran)
+  const position = new THREE.Vector3(HORSESHOE_CENTER.x + Math.sin(a) * HORSESHOE_RADIUS, 0, HORSESHOE_CENTER.z - Math.cos(a) * HORSESHOE_RADIUS);
+  // chacun regarde un point devant la scène : visages vers la caméra, légèrement tournés vers le centre
+  const dir = new THREE.Vector3().subVectors(new THREE.Vector3(0, 0, 9), position);
   return { index: order, position, rotationY: Math.atan2(dir.x, dir.z) };
 }
