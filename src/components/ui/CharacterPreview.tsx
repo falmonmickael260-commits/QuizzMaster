@@ -14,10 +14,6 @@ function Turntable({ preset }: { preset: CharacterPreset }) {
   return (
     <group ref={g} position={[0, -1.35, 0]}>
       <Character preset={preset} mood="wave" lookAt={null} seed={1} />
-      <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.9, 1.0, 48]} />
-        <meshBasicMaterial color="#29e7ff" toneMapped={false} />
-      </mesh>
     </group>
   );
 }

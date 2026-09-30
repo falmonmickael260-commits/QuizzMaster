@@ -24,7 +24,6 @@ import { DEFAULT_ROUNDS, MAX_ROUNDS } from "@shared/config";
 import { useGame } from "@/lib/net";
 import { audio } from "@/lib/audio";
 import { drawQuizzMasterLogo } from "@/lib/logo";
-import { fontsVersion } from "@/lib/draw";
 import { CharacterPreview } from "./CharacterPreview";
 import { Avatar } from "./Avatar";
 
@@ -36,12 +35,17 @@ function Logo() {
   useEffect(() => {
     const draw = () => {
       const c = ref.current;
-      if (c) drawQuizzMasterLogo(c.getContext("2d")!, c.width, true);
+      if (c) drawQuizzMasterLogo(c.getContext("2d")!, c.width, false);
     };
     draw();
     void document.fonts?.ready.then(draw);
   }, []);
-  return <canvas ref={ref} className="menu-logo" width={720} height={720} aria-label="QUIZZ MASTER" role="img" data-v={fontsVersion} />;
+  return (
+    <div className="menu-logo-wrap">
+      <div className="menu-logo-halo" aria-hidden />
+      <canvas ref={ref} className="menu-logo" width={720} height={720} aria-label="QUIZZ MASTER" role="img" />
+    </div>
+  );
 }
 
 function PeopleIcon({ n, color }: { n: 1 | 2 | 4; color: string }) {
@@ -153,6 +157,8 @@ export function Home() {
   return (
     <div className="menu">
       <div className="menu-bg" />
+      <div className="menu-bg-shade" />
+      <div className="menu-sparkles" aria-hidden />
       <div className="menu-col">
         {/* profil + réglages */}
         <header className="menu-top">
@@ -193,18 +199,30 @@ export function Home() {
 
         <div className="menu-modes">
           <div className="menu-mode gold">
+            <span className="menu-shield" aria-hidden>
+              ♛
+            </span>
+            <i className="menu-chev" aria-hidden>
+              ›
+            </i>
             <PeopleIcon n={2} color="#ffc94a" />
             <b>2 RÉPONSES</b>
             <em>50 pts</em>
             <small>Plus de sécurité</small>
           </div>
           <div className="menu-mode blue">
+            <i className="menu-chev" aria-hidden>
+              ›
+            </i>
             <PeopleIcon n={4} color="#3a86ff" />
             <b>4 RÉPONSES</b>
             <em>100 pts</em>
             <small>Plus de possibilités</small>
           </div>
           <div className="menu-mode green">
+            <i className="menu-chev" aria-hidden>
+              ›
+            </i>
             <PeopleIcon n={1} color="#2ee59d" />
             <b>SOLO</b>
             <em>200 pts</em>
@@ -226,8 +244,9 @@ export function Home() {
           </div>
           <div className="menu-stage">
             <div className="menu-preview">
-              <CharacterPreview preset={preset} distance={5.6} />
+              <CharacterPreview preset={preset} distance={6.2} />
             </div>
+            <div className="menu-spot" aria-hidden />
             <div className="menu-pedestal" />
             <button type="button" className="menu-arrow left" aria-label="Personnage précédent" onClick={() => pickBase(baseIndex - 1)}>
               ‹

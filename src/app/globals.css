@@ -2612,3 +2612,299 @@ button.tv-badge {
     grid-template-columns: 1.3fr 1fr;
   }
 }
+/* ─── Menu : finition ─── */
+.menu-bg {
+  background: url("/decor/menu.webp") center top / cover no-repeat, #02030a;
+}
+.menu-bg-shade,
+.menu-sparkles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+.menu-bg-shade {
+  background: radial-gradient(ellipse at 50% 18%, transparent 0, rgba(3, 6, 22, 0.1) 40%, rgba(3, 6, 22, 0.55) 75%), linear-gradient(180deg, transparent 30%, rgba(3, 6, 22, 0.55) 70%, rgba(3, 6, 22, 0.85));
+}
+.menu-sparkles {
+  background-image: radial-gradient(1.5px 1.5px at 10% 20%, rgba(255, 220, 150, 0.9), transparent), radial-gradient(1.5px 1.5px at 30% 70%, rgba(120, 180, 255, 0.9), transparent),
+    radial-gradient(2px 2px at 55% 35%, rgba(255, 230, 170, 0.8), transparent), radial-gradient(1.5px 1.5px at 75% 80%, rgba(120, 180, 255, 0.8), transparent),
+    radial-gradient(2px 2px at 90% 45%, rgba(255, 220, 150, 0.8), transparent), radial-gradient(1.5px 1.5px at 45% 90%, rgba(255, 220, 150, 0.7), transparent);
+  background-size: 420px 420px;
+  animation: menu-sparkle 26s linear infinite;
+  opacity: 0.8;
+}
+@keyframes menu-sparkle {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 -420px;
+  }
+}
+.menu-col > * {
+  animation: menu-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.menu-col > :nth-child(2) {
+  animation-delay: 0.05s;
+}
+.menu-col > :nth-child(3) {
+  animation-delay: 0.12s;
+}
+.menu-col > :nth-child(4) {
+  animation-delay: 0.18s;
+}
+.menu-col > :nth-child(5) {
+  animation-delay: 0.24s;
+}
+.menu-col > :nth-child(n + 6) {
+  animation-delay: 0.3s;
+}
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+.menu-logo-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin: -10px auto -18px;
+  width: min(360px, 78vw);
+  aspect-ratio: 1;
+}
+.menu-logo-wrap .menu-logo {
+  position: relative;
+  width: 100%;
+  margin: 0;
+  animation: menu-float 6s ease-in-out infinite;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 22px rgba(255, 190, 70, 0.35));
+}
+.menu-logo-halo {
+  position: absolute;
+  inset: 13% 9% 5%;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 201, 74, 0.85);
+  box-shadow: 0 0 30px rgba(255, 190, 70, 0.6), inset 0 0 40px rgba(60, 140, 255, 0.55), 0 0 0 10px rgba(58, 134, 255, 0.25);
+  background: radial-gradient(circle at 50% 45%, rgba(40, 80, 200, 0.45), rgba(5, 10, 40, 0.1) 65%, transparent 72%);
+}
+.menu-logo-halo::before {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0 70%, rgba(120, 190, 255, 0.95) 80%, transparent 90%);
+  -webkit-mask: radial-gradient(circle, transparent 62%, #000 64%, #000 70%, transparent 72%);
+  mask: radial-gradient(circle, transparent 62%, #000 64%, #000 70%, transparent 72%);
+  animation: menu-spin 5s linear infinite;
+}
+@keyframes menu-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes menu-float {
+  50% {
+    transform: translateY(-6px);
+  }
+}
+.menu-mode {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.menu-mode:hover {
+  transform: translateY(-3px);
+}
+.menu-mode svg {
+  filter: drop-shadow(0 0 10px currentColor);
+}
+.menu-mode::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.14) 50%, transparent 65%);
+  transform: translateX(-100%);
+  animation: menu-shine 5s ease-in-out infinite;
+}
+.menu-mode.blue::after {
+  animation-delay: 1.2s;
+}
+.menu-mode.green::after {
+  animation-delay: 2.4s;
+}
+@keyframes menu-shine {
+  0%,
+  60% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+.menu-chev {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-style: normal;
+  font-size: 30px;
+  font-weight: 300;
+  opacity: 0.85;
+}
+.menu-shield {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 15px;
+  color: #3a2400;
+  background: linear-gradient(180deg, #ffe08a, #d99a1c);
+  width: 24px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  clip-path: polygon(50% 0, 100% 18%, 92% 70%, 50% 100%, 8% 70%, 0 18%);
+}
+.menu-spot {
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  top: -12px;
+  bottom: 24px;
+  background: linear-gradient(180deg, rgba(90, 160, 255, 0.35), rgba(90, 160, 255, 0.05) 70%, transparent);
+  clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%);
+  filter: blur(4px);
+  pointer-events: none;
+}
+.menu-pedestal::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0 60%, rgba(41, 231, 255, 0.9) 75%, transparent 90%);
+  -webkit-mask: radial-gradient(ellipse, transparent 64%, #000 68%, #000 76%, transparent 80%);
+  mask: radial-gradient(ellipse, transparent 64%, #000 68%, #000 76%, transparent 80%);
+  animation: menu-spin 3.5s linear infinite;
+}
+.menu-cta.create {
+  position: relative;
+  overflow: hidden;
+  animation: menu-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both, menu-pulse 2.6s ease-in-out 0.8s infinite;
+}
+.menu-cta.create::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.35) 48%, transparent 62%);
+  transform: translateX(-120%);
+  animation: menu-shine 3.2s ease-in-out infinite;
+}
+@keyframes menu-pulse {
+  50% {
+    box-shadow: 0 0 42px rgba(255, 46, 99, 0.85), 0 0 0 4px rgba(255, 120, 160, 0.25);
+  }
+}
+.menu-card,
+.menu-box {
+  border-image: none;
+}
+.menu-perso {
+  border-color: rgba(120, 170, 255, 0.45);
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 26px rgba(58, 134, 255, 0.18);
+}
+
+/* Écran large : décor du plateau en fond et mise en page sur deux colonnes */
+@media (min-width: 1100px) and (min-aspect-ratio: 1/1) {
+  .menu-bg {
+    background: url("/decor/plateau.webp") center / cover no-repeat, #02030a;
+  }
+  .menu-bg-shade {
+    background: linear-gradient(90deg, rgba(3, 6, 22, 0.55), rgba(3, 6, 22, 0.25) 40%, rgba(3, 6, 22, 0.25) 60%, rgba(3, 6, 22, 0.6)), linear-gradient(180deg, transparent 50%, rgba(3, 6, 22, 0.6));
+  }
+  .menu-col {
+    width: min(1260px, 100%);
+    min-height: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    grid-template-areas:
+      "top top"
+      "logo perso"
+      "tag perso"
+      "modes perso"
+      "create perso"
+      "row perso"
+      "div perso"
+      "join perso";
+    grid-template-rows: auto auto auto auto auto auto auto 1fr;
+    column-gap: 30px;
+    row-gap: 14px;
+    padding: 18px 28px 28px;
+    align-content: start;
+  }
+  .menu-top {
+    grid-area: top;
+  }
+  .menu-logo-wrap {
+    grid-area: logo;
+    width: min(330px, 30vw);
+  }
+  .menu-tagline {
+    grid-area: tag;
+  }
+  .menu-modes {
+    grid-area: modes;
+  }
+  .menu-perso {
+    grid-area: perso;
+    align-self: start;
+    grid-template-columns: auto 1fr 230px;
+    margin-top: 30px;
+  }
+  .menu-stage {
+    min-height: 460px;
+  }
+  .menu-grid {
+    max-height: 470px;
+  }
+  .menu-cta.create {
+    grid-area: create;
+  }
+  .menu-row {
+    grid-area: row;
+  }
+  .menu-divider {
+    grid-area: div;
+  }
+  .menu-join {
+    grid-area: join;
+    align-self: start;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .menu-col > *,
+  .menu-sparkles,
+  .menu-logo-wrap .menu-logo,
+  .menu-logo-halo::before,
+  .menu-pedestal::before,
+  .menu-mode::after,
+  .menu-cta.create,
+  .menu-cta.create::after {
+    animation: none;
+  }
+}
+.menu-mode {
+  padding-right: 18px;
+  padding-left: 10px;
+}
+@media (max-width: 560px) {
+  .menu-chev {
+    right: 4px;
+    font-size: 20px;
+    top: auto;
+    bottom: 8px;
+    transform: none;
+  }
+  .menu-mode {
+    padding: 12px 6px;
+  }
+}
