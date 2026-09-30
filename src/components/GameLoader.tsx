@@ -8,8 +8,8 @@ const Game = dynamic(() => import("./Game"), {
   loading: () => (
     <div style={{ position: "fixed", inset: 0, display: "grid", placeItems: "center", background: "#03040b" }}>
       <div className="display" style={{ fontSize: 42, letterSpacing: "0.04em" }}>
-        <span className="logo-blind">BLIND</span>
-        <span className="logo-quizz">QUIZZ</span>
+        <span className="logo-blind">QUIZZ</span>
+        <span className="logo-quizz">MASTER</span>
       </div>
     </div>
   ),

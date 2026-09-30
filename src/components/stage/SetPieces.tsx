@@ -69,7 +69,7 @@ export function LivePanel({ state, colors }: { state: PublicRoomState | null; co
 
 const easeOut = (x: number) => 1 - Math.pow(1 - x, 4);
 
-export function Wheel({ state }: { state: PublicRoomState | null }) {
+export function Wheel({ state, position, rotationY }: { state: PublicRoomState | null; position?: THREE.Vector3; rotationY?: number }) {
   const disc = useRef<THREE.Group>(null);
   const bulbs = useRef<THREE.InstancedMesh>(null);
   const lastSeg = useRef(0);
@@ -89,7 +89,8 @@ export function Wheel({ state }: { state: PublicRoomState | null }) {
     if (typeof document !== "undefined" && document.fonts) void document.fonts.ready.then(draw);
     return tex;
   }, []);
-  const rotY = useMemo(() => Math.atan2(2 - WHEEL_POS.x, 12 - WHEEL_POS.z), []);
+  const rotY = useMemo(() => rotationY ?? Math.atan2(2 - WHEEL_POS.x, 12 - WHEEL_POS.z), [rotationY]);
+  const at = position ?? WHEEL_POS;
   const bulbCount = 40;
   const bulbColor = useMemo(() => new THREE.Color(), []);
   const dummy = useMemo(() => new THREE.Object3D(), []);
@@ -136,7 +137,7 @@ export function Wheel({ state }: { state: PublicRoomState | null }) {
   });
 
   return (
-    <group position={[WHEEL_POS.x, 0, WHEEL_POS.z]} rotation={[0, rotY, 0]}>
+    <group position={[at.x, at.y, at.z]} rotation={[0, rotY, 0]}>
       {/* socle */}
       <mesh position={[0, 0.2, 0]}>
         <cylinderGeometry args={[1.5, 1.8, 0.4, 48]} />

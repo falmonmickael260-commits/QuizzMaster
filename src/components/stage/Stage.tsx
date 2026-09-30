@@ -6,12 +6,15 @@ import { Bloom, EffectComposer, SMAA, Vignette } from "@react-three/postprocessi
 import { Suspense, useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 import type { PrivateState, PublicRoomState } from "@shared/types";
-import { PLAYER_COLORS, SEATS } from "@/lib/layout";
+import { PLAYER_COLORS, tvSeat } from "@/lib/layout";
 import { serverNow } from "@/lib/net";
 import { CameraDirector } from "./CameraDirector";
 import { CandidateSeat } from "./Podium";
-import { Audience, BigScreen, Confetti, Host, LivePanel, Wheel } from "./SetPieces";
-import { DEBUG_FX, Studio } from "./Studio";
+import { BigScreen, Confetti, Wheel } from "./SetPieces";
+import { TV_STAGE_CENTER, TvSet } from "./TvSet";
+import { DEBUG_FX } from "./Studio";
+
+const WHEEL_ON_STAGE = new THREE.Vector3(TV_STAGE_CENTER.x, 0.42, TV_STAGE_CENTER.z - 0.4);
 
 export type Quality = "high" | "low";
 
@@ -56,16 +59,9 @@ export default function Stage({ state, live = false, priv, myId, quality, onQual
   const [dpr, setDpr] = useState(() => (quality === "high" ? MAX_DPR : Math.min(MAX_DPR, 1.25)));
   useEffect(() => setDpr(quality === "high" ? MAX_DPR : Math.min(MAX_DPR, 1.25)), [quality]);
   const me = state?.players.find((p) => p.id === myId) ?? null;
-  const colors = useMemo(() => {
-    const out: Record<string, string> = {};
-    state?.players.forEach((p) => (out[p.id] = PLAYER_COLORS[p.seat % PLAYER_COLORS.length]));
-    return out;
-  }, [state?.players]);
   const now = serverNow();
-  const phase = state?.phase ?? "none";
   const choosing = state?.phase === "wheel" && state.wheel?.stage === "choose_target" && state.wheel.spinnerId === myId;
   const finalT = state?.phase === "final" ? now - state.phaseStartedAt : 0;
-  const excitement = !state ? 0.2 : state.phase === "final" || state.phase === "intro" ? 1 : state.phase === "reveal" && now - state.phaseStartedAt < 3500 ? 0.8 : state.phase === "wheel" && state.wheel?.stage === "result" ? 0.9 : 0.1;
 
   return (
     <Canvas
@@ -97,33 +93,32 @@ export default function Stage({ state, live = false, priv, myId, quality, onQual
           <Lightformer form="rect" intensity={2} color="#ff2e63" position={[8, 5, 0]} scale={[4, 8, 1]} />
           <Lightformer form="ring" intensity={3} color="#ffffff" position={[0, 10, 4]} scale={6} />
         </Environment>
-        <Studio phase={phase} quality={quality} />
+        <TvSet quality={quality} />
         <BigScreen state={state} />
-        <LivePanel state={state} colors={colors} />
-        <Wheel state={state} />
-        <Host state={state} />
-        <Audience excitement={excitement} count={quality === "high" ? 1 : 1.6} />
-        {SEATS.map((seat) => {
-          const player = state?.players.find((p) => p.seat === seat.index) ?? null;
-          const selectable = !!choosing && !!player && player.id !== myId;
-          // pendant l'émission, les places inoccupées disparaissent du plateau (elles ne bougent jamais)
-          if (!player && state && state.phase !== "lobby") return null;
-          return (
-            <CandidateSeat
-              key={seat.index}
-              seat={seat.index}
-              player={player}
-              state={state}
-              priv={player && player.id === myId ? priv : null}
-              color={PLAYER_COLORS[seat.index % PLAYER_COLORS.length]}
-              isMe={!!player && player.id === myId}
-              selectable={selectable}
-              onSelect={onSelectTarget}
-            />
-          );
-        })}
+        {/* la roue bonus / malus s'installe sur la scène centrale le temps de sa phase */}
+        {state?.phase === "wheel" && <Wheel state={state} position={WHEEL_ON_STAGE} rotationY={0} />}
+        {/* uniquement les candidats présents, répartis sur toute la largeur du plateau */}
+        {[...(state?.players ?? [])]
+          .sort((x, y) => x.seat - y.seat)
+          .map((player, order, list) => {
+            const selectable = !!choosing && player.id !== myId;
+            return (
+              <CandidateSeat
+                key={player.id}
+                seat={player.seat}
+                place={tvSeat(order, list.length)}
+                player={player}
+                state={state}
+                priv={player.id === myId ? priv : null}
+                color={PLAYER_COLORS[player.seat % PLAYER_COLORS.length]}
+                isMe={player.id === myId}
+                selectable={selectable}
+                onSelect={onSelectTarget}
+              />
+            );
+          })}
         <Confetti active={state?.phase === "final" && finalT > 2800} />
-        <CameraDirector state={state} mySeat={me?.seat ?? null} fixed={live} />
+        <CameraDirector state={state} mySeat={me?.seat ?? null} fixed />
         {/* tampons 8 bits : une valeur invalide isolée (NaN) ne peut plus se propager à tout l'écran via le flou du bloom */}
         {quality === "high" && !DEBUG_FX.includes("nobloom") && (
           <EffectComposer multisampling={0} frameBufferType={THREE.UnsignedByteType}>

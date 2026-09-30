@@ -14,8 +14,8 @@ import * as THREE from "three";
 
 export const STAGE_CENTER = new THREE.Vector3(0, 0, 1.2);
 export const HOST_POS = new THREE.Vector3(0, 0, -0.7);
-export const SCREEN_POS = new THREE.Vector3(0, 5.9, -8.8);
-export const SCREEN_SIZE = { w: 12, h: 6.75 };
+export const SCREEN_POS = new THREE.Vector3(0, 5.2, -8.8);
+export const SCREEN_SIZE = { w: 10.4, h: 5.85 };
 export const WHEEL_POS = new THREE.Vector3(-10.8, 0, -5.4);
 export const WHEEL_RADIUS = 2.3;
 export const WHEEL_CENTER_Y = 3.55;
@@ -67,3 +67,21 @@ export function seatCamera(seat: number, distance = 5.6, height = 2.9): { pos: T
 }
 
 export const PLAYER_COLORS = ["#29e7ff", "#ff2e63", "#ffb800", "#2ee59d", "#a66cff", "#ff7a1c", "#3a86ff", "#ff66c4"];
+
+/**
+ * Placement des pupitres sur le plateau TV : répartis de part et d'autre de la scène centrale
+ * selon le nombre de candidats (2 à 8), pour occuper toute la largeur du plateau.
+ */
+const TV_SIDE_ANGLES: Record<number, number[]> = { 1: [24], 2: [24, 46], 3: [18, 36, 54], 4: [16.5, 29, 41.5, 54] };
+
+export function tvSeat(order: number, count: number): Seat {
+  const perSide = Math.ceil(Math.max(count, 2) / 2);
+  const angles = TV_SIDE_ANGLES[Math.min(4, perSide)];
+  const side = order % 2 === 0 ? -1 : 1;
+  const deg = side * angles[Math.min(angles.length - 1, Math.floor(order / 2))];
+  const a = THREE.MathUtils.degToRad(deg);
+  // arc en retrait, entre la scène centrale et le grand écran ; pupitres tournés vers le public
+  const position = new THREE.Vector3(Math.sin(a) * 10, 0, 5 - Math.cos(a) * 10);
+  const dir = new THREE.Vector3().subVectors(new THREE.Vector3(0, 0, 14), position);
+  return { index: order, position, rotationY: Math.atan2(dir.x, dir.z) };
+}
