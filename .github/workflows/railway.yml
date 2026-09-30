@@ -8,11 +8,15 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: "diagnose | setup | deploy | check"
+        description: "diagnose | setup | deploy | check | domain"
         required: true
         default: diagnose
       service:
         description: "Nom du service Railway (vide = détection automatique)"
+        required: false
+        default: ""
+      domain:
+        description: "Domaine personnalisé à relier (action domain), ex. quizzmaster.fr"
         required: false
         default: ""
 
@@ -95,3 +99,16 @@ jobs:
           echo "Adresse : https://$DOMAIN"
           for i in $(seq 1 30); do curl -sf "https://$DOMAIN/api/health" > /dev/null && break; sleep 5; done
           node scripts/check-live.mjs "https://$DOMAIN"
+
+      - name: Domaine personnalisé
+        if: inputs.action == 'domain'
+        env:
+          SVC: ${{ steps.svc.outputs.name }}
+          DOMAIN: ${{ inputs.domain }}
+        run: |
+          if [ -z "$DOMAIN" ]; then echo "::error::Indiquez le domaine"; exit 1; fi
+          echo "── Création (ou rappel) du domaine $DOMAIN"
+          railway domain "$DOMAIN" --service "$SVC" --port 8080 || true
+          echo "── État et enregistrements DNS à créer chez le bureau d'enregistrement"
+          railway domain status "$DOMAIN" --service "$SVC" || true
+          railway domain list --service "$SVC" || true
