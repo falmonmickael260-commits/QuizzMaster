@@ -137,7 +137,7 @@ function framePoints(count: number): THREE.Vector3[] {
   }
   for (const sx of [-1, 1]) {
     pts.push(V(SCREEN_POS.x + sx * (SCREEN_SIZE.w / 2 + 0.3), SCREEN_POS.y + SCREEN_SIZE.h / 2 + 0.3, SCREEN_POS.z));
-    pts.push(V(sx * 3, 0, TV_STAGE_CENTER.z + 4.6));
+    pts.push(V(sx * 2.5, 0, TV_STAGE_CENTER.z + 3.6));
   }
   return pts;
 }
@@ -196,8 +196,8 @@ function fitShot(pts: THREE.Vector3[], aspect: number, fov: number, elev: number
 }
 
 /**
- * Hauteur (fraction de l'écran) occupée par l'habillage en haut et en bas. Pendant la partie, la réserve du bas
- * ne fait que grandir (le cadre ne saute pas d'une question à l'autre) ; salon et finale ont leur propre réserve.
+ * Hauteur (fraction de l'écran) occupée par l'habillage en haut et en bas. Au sein d'une même phase la réserve du bas
+ * ne fait que grandir (le cadre ne saute pas pendant qu'on répond) ; à chaque phase, la caméra se recadre.
  */
 function useSafeArea(group: () => string) {
   const safe = useRef({ top: 0.1, bottom: 0.2, w: 0, h: 0, group: "" });
@@ -236,8 +236,8 @@ export function CameraDirector({ state, mySeat, override, fixed = false }: { sta
   const stateRef = useRef(state);
   stateRef.current = state;
   const phaseGroup = useCallback(() => {
-    const p = stateRef.current?.phase;
-    return p === "final" || p === "lobby" ? p : "game";
+    const s = stateRef.current;
+    return s ? `${s.phase}|${s.phase === "wheel" ? s.wheel?.stage : ""}` : "";
   }, []);
   const safe = useSafeArea(phaseGroup);
   const fitCache = useRef<{ key: string; at: number; shot: Shot } | null>(null);
