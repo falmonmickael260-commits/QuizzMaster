@@ -11,6 +11,7 @@ import { serverNow } from "@/lib/net";
 import { CameraDirector } from "./CameraDirector";
 import { CandidateSeat } from "./Podium";
 import { BigScreen, Confetti, Wheel } from "./SetPieces";
+import { StageLights } from "./StageLights";
 import { TV_STAGE_CENTER, TvSet } from "./TvSet";
 import { DEBUG_FX } from "./Studio";
 
@@ -48,6 +49,15 @@ function FpsLimiter({ fps }: { fps: number }) {
   return null;
 }
 
+/** Exposition : sans le halo lumineux (qualité légère), la scène est éclaircie pour garder l'ambiance du plateau. */
+function Exposure({ value }: { value: number }) {
+  const gl = useThree((s) => s.gl);
+  useEffect(() => {
+    gl.toneMappingExposure = value;
+  }, [gl, value]);
+  return null;
+}
+
 const FPS_LIMIT = typeof window !== "undefined" ? Number(new URLSearchParams(location.search).get("fps")) || 0 : 0;
 
 // Netteté : résolution native de l'écran (jusqu'à 2x sur Retina) tant que l'appareil suit,
@@ -79,6 +89,7 @@ export default function Stage({ state, live = false, priv, myId, quality, onQual
       <color attach="background" args={["#03040b"]} />
       <fog attach="fog" args={["#03040b", 24, 55]} />
       {FPS_LIMIT > 0 && <FpsLimiter fps={FPS_LIMIT} />}
+      <Exposure value={quality === "high" ? 1.05 : 1.3} />
       <PerformanceMonitor
         flipflops={4}
         onIncline={() => setDpr((d) => Math.min(quality === "high" ? MAX_DPR : 1.25, d + 0.25))}
@@ -94,6 +105,7 @@ export default function Stage({ state, live = false, priv, myId, quality, onQual
           <Lightformer form="ring" intensity={3} color="#ffffff" position={[0, 10, 4]} scale={6} />
         </Environment>
         <TvSet quality={quality} />
+        <StageLights state={state} quality={quality} />
         <BigScreen state={state} />
         {/* la roue bonus / malus s'installe sur la scène centrale le temps de sa phase */}
         {state?.phase === "wheel" && <Wheel state={state} position={WHEEL_ON_STAGE} rotationY={0} />}
@@ -118,7 +130,7 @@ export default function Stage({ state, live = false, priv, myId, quality, onQual
             );
           })}
         <Confetti active={state?.phase === "final" && finalT > 2800} />
-        <CameraDirector state={state} mySeat={me?.seat ?? null} fixed />
+        <CameraDirector state={state} mySeat={me?.seat ?? null} fixed={live} />
         {/* tampons 8 bits : une valeur invalide isolée (NaN) ne peut plus se propager à tout l'écran via le flou du bloom */}
         {quality === "high" && !DEBUG_FX.includes("nobloom") && (
           <EffectComposer multisampling={0} frameBufferType={THREE.UnsignedByteType}>

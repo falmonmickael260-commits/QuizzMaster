@@ -90,7 +90,8 @@ export function Home() {
     // /?partie-test : lance directement une partie de démonstration regardable
     if (params.has("partie-test")) {
       const manches = Math.max(1, Math.min(6, Number(params.get("manches")) || 2));
-      startDemo(params.get("pseudo") || "Alex", params.get("perso") || "hugo", manches);
+      const joueurs = Math.max(2, Math.min(8, Number(params.get("joueurs")) || 4));
+      startDemo(params.get("pseudo") || "Alex", params.get("perso") || "hugo", manches, joueurs - 1);
       return;
     }
     const room = params.get("room");

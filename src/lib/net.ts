@@ -40,7 +40,7 @@ interface GameStore {
   removeBots: () => void;
   setAutopilot: (on: boolean) => void;
   /** Partie de démonstration : crée la room, ajoute 3 candidats simulés, active le pilote automatique et lance. */
-  startDemo: (name: string, character: string, rounds: number) => void;
+  startDemo: (name: string, character: string, rounds: number, bots?: number) => void;
   toast: (text: string, tone?: Toast["tone"]) => void;
 }
 
@@ -176,9 +176,9 @@ export const useGame = create<GameStore>((set, get) => ({
   addBots: (count = 3) => get().send({ t: "addBots", count }),
   removeBots: () => get().send({ t: "removeBots" }),
   setAutopilot: (on) => get().send({ t: "autopilot", on }),
-  startDemo(name, character, rounds) {
+  startDemo(name, character, rounds, bots = 3) {
     saveSession(null);
-    afterWelcome = [{ t: "addBots", count: 3 }, { t: "autopilot", on: true }, { t: "start" }];
+    afterWelcome = [{ t: "addBots", count: bots }, { t: "autopilot", on: true }, { t: "start" }];
     get().send({ t: "create", name, character, rounds });
   },
   leave() {
