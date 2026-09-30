@@ -1807,3 +1807,233 @@ button.tv-badge {
     height: 48px;
   }
 }
+
+/* ═══ Plateau-image QUIZZ MASTER (décor fourni + lumières animées) ═══ */
+.dec-root {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #02030a;
+  z-index: 0;
+}
+.dec-frame {
+  position: absolute;
+}
+.dec-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  pointer-events: none;
+}
+.dec-fx {
+  position: absolute;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  will-change: opacity, transform;
+}
+.dec-sweep {
+  inset: 0;
+  background: linear-gradient(105deg, transparent 42%, rgba(255, 214, 140, 0.16) 50%, transparent 58%);
+  background-size: 260% 100%;
+  animation: dec-sweep 11s linear infinite;
+}
+@keyframes dec-sweep {
+  from {
+    background-position: 130% 0;
+  }
+  to {
+    background-position: -30% 0;
+  }
+}
+.dec-beam {
+  top: -6%;
+  width: 26%;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(255, 232, 180, 0.2), rgba(255, 210, 140, 0.06) 60%, transparent 85%);
+  clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%);
+  transform-origin: 50% 0;
+  filter: blur(6px);
+}
+.dec-beam.left {
+  left: 20%;
+  animation: dec-beam-l 8s ease-in-out infinite alternate;
+}
+.dec-beam.right {
+  left: 54%;
+  animation: dec-beam-r 9s ease-in-out infinite alternate;
+}
+@keyframes dec-beam-l {
+  from {
+    transform: rotate(14deg);
+  }
+  to {
+    transform: rotate(-10deg);
+  }
+}
+@keyframes dec-beam-r {
+  from {
+    transform: rotate(-14deg);
+  }
+  to {
+    transform: rotate(10deg);
+  }
+}
+.dec-ring {
+  border-radius: 50%;
+  box-shadow: 0 0 calc(46px * var(--k)) rgba(255, 190, 70, 0.55), inset 0 0 calc(40px * var(--k)) rgba(80, 150, 255, 0.5);
+  animation: dec-pulse 3.2s ease-in-out infinite;
+}
+.dec-floor {
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(255, 200, 100, 0.35), rgba(80, 140, 255, 0.12) 45%, transparent 70%);
+  animation: dec-pulse 4.5s ease-in-out infinite;
+}
+@keyframes dec-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+.dec-spot {
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 244, 210, 0.95) 0, rgba(255, 205, 120, 0.4) 22%, transparent 60%);
+  animation: dec-twinkle 2.4s ease-in-out infinite alternate;
+}
+@keyframes dec-twinkle {
+  from {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+.dec-screen {
+  position: absolute;
+  overflow: hidden;
+  border-radius: calc(10px * var(--k));
+  border: calc(4px * var(--k)) solid #e7b64a;
+  background: #050a24;
+  box-shadow: 0 0 calc(34px * var(--k)) rgba(255, 190, 70, 0.55), 0 0 0 calc(3px * var(--k)) rgba(90, 168, 255, 0.7), 0 calc(10px * var(--k)) calc(30px * var(--k)) rgba(0, 0, 0, 0.6);
+}
+.dec-screen canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.dec-host {
+  position: absolute;
+  pointer-events: none;
+}
+.dec-host canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+.dec-tag {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 0 4px;
+  border-radius: calc(9px * var(--k));
+  background: linear-gradient(180deg, rgba(14, 22, 64, 0.94), rgba(5, 8, 28, 0.94));
+  border: calc(2px * var(--k)) solid var(--pc);
+  box-shadow: 0 0 calc(14px * var(--k)) color-mix(in srgb, var(--pc) 55%, transparent);
+  color: #fff;
+  cursor: default;
+  transition: box-shadow 0.3s, border-color 0.3s, transform 0.2s;
+  line-height: 1.05;
+}
+.dec-tag-name {
+  font-weight: 800;
+  font-size: max(10px, calc(15px * var(--k)));
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dec-tag-score {
+  font-family: var(--font-display);
+  font-size: max(11px, calc(19px * var(--k)));
+  color: var(--pc);
+}
+.dec-tag.me {
+  outline: calc(2px * var(--k)) solid #ffc94a;
+  outline-offset: calc(2px * var(--k));
+}
+.dec-tag.answered {
+  box-shadow: 0 0 calc(18px * var(--k)) rgba(255, 255, 255, 0.55);
+}
+.dec-tag.good {
+  border-color: #22c55e;
+  box-shadow: 0 0 calc(22px * var(--k)) rgba(34, 197, 94, 0.85);
+}
+.dec-tag.bad {
+  border-color: #ef4444;
+  box-shadow: 0 0 calc(18px * var(--k)) rgba(239, 68, 68, 0.7);
+}
+.dec-tag.offline {
+  opacity: 0.45;
+}
+.dec-tag.selectable {
+  cursor: pointer;
+  animation: dec-target 0.9s ease-in-out infinite alternate;
+}
+@keyframes dec-target {
+  to {
+    transform: scale(1.08);
+    box-shadow: 0 0 calc(26px * var(--k)) rgba(255, 46, 99, 0.9);
+    border-color: #ff2e63;
+  }
+}
+.dec-wheel {
+  position: fixed;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
+  width: min(52vh, 86vw);
+  z-index: 12;
+  pointer-events: none;
+  filter: drop-shadow(0 0 30px rgba(255, 190, 70, 0.55)) drop-shadow(0 20px 40px rgba(0, 0, 0, 0.6));
+  animation: dec-wheel-in 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+.dec-wheel svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.dec-bulb {
+  fill: #ffd84a;
+  animation: dec-bulb 0.6s steps(2) infinite;
+}
+@keyframes dec-bulb {
+  50% {
+    fill: #5a3d0a;
+  }
+}
+@keyframes dec-wheel-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dec-fx,
+  .dec-bulb {
+    animation: none;
+  }
+}
+.dec-backdrop {
+  position: absolute;
+  inset: -40px;
+  background: var(--decor) center 30% / cover no-repeat;
+  filter: blur(28px) brightness(0.35) saturate(1.2);
+}

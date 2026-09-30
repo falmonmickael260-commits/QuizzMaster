@@ -205,7 +205,7 @@ export function Wheel({ state, position, rotationY }: { state: PublicRoomState |
 
 // ─── Animateur ───────────────────────────────────────────────────────────────
 
-const HOST_PRESET = { ...CHARACTERS[0], id: "host", name: "Animateur", skin: "#e8b995", hair: "#2b1d14", eyes: "#3a2a1a", hairStyle: "short" as const, accessory: "none" as const };
+export const HOST_PRESET = { ...CHARACTERS[0], id: "host", name: "Animateur", skin: "#e8b995", hair: "#2b1d14", eyes: "#3a2a1a", hairStyle: "short" as const, accessory: "none" as const };
 
 export function Host({ state }: { state: PublicRoomState | null }) {
   const { mood, look } = hostMood(state, serverNow());
