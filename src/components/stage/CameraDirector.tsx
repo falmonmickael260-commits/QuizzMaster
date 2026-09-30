@@ -3,11 +3,12 @@
 import { REVEAL_LOCK_MS } from "@shared/config";
 
 import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import * as THREE from "three";
 import type { PublicRoomState } from "@shared/types";
-import { HOST_POS, SCREEN_POS, WHEEL_CENTER_Y, WHEEL_POS, seatCamera } from "@/lib/layout";
+import { HOST_POS, SCREEN_POS, SCREEN_SIZE, WHEEL_CENTER_Y, WHEEL_POS, seatCamera, tvSeat } from "@/lib/layout";
 import { serverNow } from "@/lib/net";
+import { TV_STAGE_CENTER } from "./TvSet";
 
 interface Shot {
   pos: THREE.Vector3;
@@ -22,9 +23,6 @@ const V = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
 // ─── Caméras du plateau ──────────────────────────────────────────────────────
 export const CAMERAS = {
   plateau: (): Shot => ({ pos: V(0, 7.2, 20.5), target: V(0, 2.9, -1.2), fov: 42 }),
-  // plan fixe de la partie : plateau, écran géant et pupitres dans la moitié haute,
-  // l'habillage (question, réponses, candidats) occupant la moitié basse
-  fixe: (): Shot => ({ pos: V(0, 10.5, 21.5), target: V(0, 1.5, -4), fov: 40 }),
   // pendant la question : grand écran + candidats + animateur dans le même plan
   plateauClose: (t: number): Shot => ({ pos: V(Math.sin(t * 0.00012) * 1.4, 6.4, 17.5), target: V(0, 3.6, -2.2), fov: 44 }),
   // gros plan animateur (générique) : cadré à hauteur d'homme, l'écran n'est qu'un fond lumineux
@@ -128,6 +126,107 @@ function directShot(s: PublicRoomState | null, now: number, mySeat: number | nul
   return CAMERAS.plateau();
 }
 
+// ─── Plan de la partie : cadrage calculé pour que tous les pupitres restent visibles ─────
+/** Points à garder dans l'image : chaque pupitre (candidat compris), le grand écran et l'avant de la scène. */
+function framePoints(count: number): THREE.Vector3[] {
+  const n = Math.max(2, count);
+  const pts: THREE.Vector3[] = [];
+  for (let i = 0; i < n; i++) {
+    const p = tvSeat(i, n).position;
+    for (const dx of [-1, 1]) pts.push(p.clone().add(V(dx * 1.1, 0, 1)), p.clone().add(V(dx * 0.9, 3.1, -0.6)));
+  }
+  for (const sx of [-1, 1]) {
+    pts.push(V(SCREEN_POS.x + sx * (SCREEN_SIZE.w / 2 + 0.3), SCREEN_POS.y + SCREEN_SIZE.h / 2 + 0.3, SCREEN_POS.z));
+    pts.push(V(sx * 3, 0, TV_STAGE_CENTER.z + 4.6));
+  }
+  return pts;
+}
+
+const fitCam = new THREE.PerspectiveCamera();
+const tmp = new THREE.Vector3();
+
+/**
+ * Cherche la position de caméra (direction imposée) qui fait tenir tous les points dans la zone
+ * libre de l'écran, entre le bandeau du haut et l'habillage du bas.
+ */
+function fitShot(pts: THREE.Vector3[], aspect: number, fov: number, elev: number, yaw: number, safeTop: number, safeBottom: number): Shot {
+  const dir = V(Math.sin(yaw) * Math.cos(elev), Math.sin(elev), Math.cos(yaw) * Math.cos(elev));
+  const box = new THREE.Box3().setFromPoints(pts);
+  const target = box.getCenter(new THREE.Vector3());
+  fitCam.fov = fov;
+  fitCam.aspect = aspect;
+  fitCam.near = 0.1;
+  fitCam.far = 200;
+  fitCam.updateProjectionMatrix();
+  const xMin = -0.95, xMax = 0.95;
+  const yMax = 1 - 2 * safeTop, yMin = -1 + 2 * safeBottom;
+  const bounds = (d: number) => {
+    fitCam.position.copy(target).addScaledVector(dir, d);
+    fitCam.lookAt(target);
+    fitCam.updateMatrixWorld();
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    for (const p of pts) {
+      tmp.copy(p).project(fitCam);
+      x0 = Math.min(x0, tmp.x);
+      x1 = Math.max(x1, tmp.x);
+      y0 = Math.min(y0, tmp.y);
+      y1 = Math.max(y1, tmp.y);
+    }
+    return { x0, x1, y0, y1 };
+  };
+  let d = 20;
+  for (let pass = 0; pass < 4; pass++) {
+    let lo = 4, hi = 120;
+    for (let i = 0; i < 22; i++) {
+      const mid = (lo + hi) / 2;
+      const b = bounds(mid);
+      if (b.x1 - b.x0 <= xMax - xMin && b.y1 - b.y0 <= yMax - yMin) hi = mid;
+      else lo = mid;
+    }
+    d = hi;
+    // recentre le groupe dans la zone libre
+    const b = bounds(d);
+    const wy = d * Math.tan(THREE.MathUtils.degToRad(fov / 2));
+    const right = V(1, 0, 0).applyQuaternion(fitCam.quaternion);
+    const up = V(0, 1, 0).applyQuaternion(fitCam.quaternion);
+    target.addScaledVector(right, ((b.x0 + b.x1) / 2 - (xMin + xMax) / 2) * wy * aspect);
+    target.addScaledVector(up, ((b.y0 + b.y1) / 2 - (yMin + yMax) / 2) * wy);
+  }
+  return { pos: target.clone().addScaledVector(dir, d), target, fov, speed: 1.2 };
+}
+
+/**
+ * Hauteur (fraction de l'écran) occupée par l'habillage en haut et en bas. Pendant la partie, la réserve du bas
+ * ne fait que grandir (le cadre ne saute pas d'une question à l'autre) ; salon et finale ont leur propre réserve.
+ */
+function useSafeArea(group: () => string) {
+  const safe = useRef({ top: 0.1, bottom: 0.2, w: 0, h: 0, group: "" });
+  useEffect(() => {
+    const measure = () => {
+      const h = window.innerHeight;
+      const g = group();
+      if (safe.current.w !== window.innerWidth || safe.current.h !== h || safe.current.group !== g) safe.current = { top: 0.1, bottom: 0.12, w: window.innerWidth, h, group: g };
+      let bottom = 0;
+      document.querySelectorAll<HTMLElement>(".tv-panel, .tv-bottom, .tv-side, .final-panel").forEach((el) => {
+        const r = el.getBoundingClientRect();
+        // le panneau latéral d'aide (écran large) reste sur le côté : il ne compte que s'il s'étale en largeur
+        if (r.height > 0 && (!el.classList.contains("tv-side") || r.width > window.innerWidth * 0.5)) bottom = Math.max(bottom, h - r.top);
+      });
+      let top = 0;
+      document.querySelectorAll<HTMLElement>(".hud-top").forEach((el) => {
+        const r = el.getBoundingClientRect();
+        top = Math.max(top, r.bottom * 0.6);
+      });
+      safe.current.bottom = Math.min(window.innerWidth > h ? 0.55 : 0.45, Math.max(safe.current.bottom, bottom / h + 0.015));
+      safe.current.top = Math.min(0.2, Math.max(0.03, top / h));
+    };
+    measure();
+    const id = setInterval(measure, 400);
+    return () => clearInterval(id);
+  }, [group]);
+  return safe;
+}
+
 /** Réalisateur : choisit automatiquement la caméra selon la phase et adapte le cadrage à l'écran (mobile). */
 export function CameraDirector({ state, mySeat, override, fixed = false }: { state: PublicRoomState | null; mySeat: number | null; override?: Shot | null; fixed?: boolean }) {
   const { camera, size } = useThree();
@@ -136,16 +235,45 @@ export function CameraDirector({ state, mySeat, override, fixed = false }: { sta
   const curFov = useRef(45);
   const stateRef = useRef(state);
   stateRef.current = state;
+  const phaseGroup = useCallback(() => {
+    const p = stateRef.current?.phase;
+    return p === "final" || p === "lobby" ? p : "game";
+  }, []);
+  const safe = useSafeArea(phaseGroup);
+  const fitCache = useRef<{ key: string; at: number; shot: Shot } | null>(null);
   useEffect(() => {
     camera.layers.enable(1); // effets (confettis) rendus hors réflexion du sol
   }, [camera]);
 
   useFrame((_, dt) => {
-    const shot = override ?? (fixed ? CAMERAS.fixe() : directShot(stateRef.current, serverNow(), mySeat));
     const aspect0 = size.width / size.height;
-    // plan fixe sur écran peu large (tablette, petit portable) : l'habillage prend plus de hauteur,
-    // on remonte le plateau dans l'image pour garder les pupitres visibles
-    if (fixed && !override && aspect0 < 1.6 && aspect0 >= 0.9) shot.target.y -= Math.min(3, ((1.6 - aspect0) / 0.3) * 2.6);
+    if (fixed && !override) {
+      // plan de partie : tout le plateau et tous les candidats, avec un lent mouvement de grue
+      const now = performance.now();
+      const count = stateRef.current?.players.length ?? 4;
+      const portrait = aspect0 < 0.9;
+      const yaw = Math.sin(now * 0.00011) * 0.07;
+      const elev = (portrait ? 0.64 : 0.34) + Math.sin(now * 0.00007) * 0.025;
+      const key = `${count}|${size.width}x${size.height}|${safe.current.top.toFixed(3)}|${safe.current.bottom.toFixed(3)}`;
+      const c = fitCache.current;
+      if (!c || c.key !== key || now - c.at > 120) {
+        fitCache.current = { key, at: now, shot: fitShot(framePoints(count), aspect0, portrait ? 52 : 38, elev, yaw, safe.current.top, safe.current.bottom) };
+      }
+      const shot = fitCache.current!.shot;
+      const k = 1 - Math.exp(-dt * (shot.speed ?? 1.2));
+      curPos.current.lerp(shot.pos, k);
+      curTarget.current.lerp(shot.target, k);
+      curFov.current += (shot.fov - curFov.current) * k;
+      camera.position.copy(curPos.current);
+      camera.lookAt(curTarget.current);
+      const cam = camera as THREE.PerspectiveCamera;
+      if (Math.abs(cam.fov - curFov.current) > 0.01) {
+        cam.fov = curFov.current;
+        cam.updateProjectionMatrix();
+      }
+      return;
+    }
+    const shot = override ?? directShot(stateRef.current, serverNow(), mySeat);
     const aspect = size.width / size.height;
     let pos = shot.pos.clone();
     let fov = shot.fov;
