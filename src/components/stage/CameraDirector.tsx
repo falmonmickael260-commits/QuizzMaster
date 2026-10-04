@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef } from "react";
 import * as THREE from "three";
 import type { PublicRoomState } from "@shared/types";
 import { HOST_POS, SCREEN_POS, SCREEN_SIZE, WHEEL_CENTER_Y, WHEEL_POS, seatCamera, tvSeat } from "@/lib/layout";
+import { placeHead, placeLocal, starFocus, type StarFocus } from "@/lib/focus";
 import { serverNow } from "@/lib/net";
 import { TV_STAGE_CENTER } from "./TvSet";
 
@@ -135,8 +136,10 @@ function framePoints(count: number): THREE.Vector3[] {
     const p = tvSeat(i, n).position;
     for (const dx of [-1, 1]) pts.push(p.clone().add(V(dx * 1.1, 0, 1)), p.clone().add(V(dx * 0.9, 3.1, -0.6)));
   }
+  // logo couronné au-dessus du grand écran
+  pts.push(V(SCREEN_POS.x, SCREEN_POS.y + SCREEN_SIZE.h / 2 + 2.1, SCREEN_POS.z - 0.3));
   for (const sx of [-1, 1]) {
-    pts.push(V(SCREEN_POS.x + sx * (SCREEN_SIZE.w / 2 + 0.3), SCREEN_POS.y + SCREEN_SIZE.h / 2 + 0.3, SCREEN_POS.z));
+    pts.push(V(SCREEN_POS.x + sx * (SCREEN_SIZE.w / 2 + 0.7), SCREEN_POS.y + SCREEN_SIZE.h / 2 + 0.6, SCREEN_POS.z));
     pts.push(V(sx * 2.5, 0, TV_STAGE_CENTER.z + 3.6));
   }
   return pts;
@@ -193,6 +196,23 @@ function fitShot(pts: THREE.Vector3[], aspect: number, fov: number, elev: number
     target.addScaledVector(up, ((b.y0 + b.y1) / 2 - (yMin + yMax) / 2) * wy);
   }
   return { pos: target.clone().addScaledVector(dir, d), target, fov, speed: 1.2 };
+}
+
+/** Gros plan « star » : face au candidat qui vient de réussir en SOLO, sa tête dans la partie libre de l'écran. */
+function starShot(f: StarFocus, aspect: number): Shot {
+  const portrait = aspect < 0.9;
+  const head = placeHead(f.place);
+  // caméra placée à l'intérieur du fer à cheval (côté scène) : aucun voisin entre elle et la star
+  const toCenter = V(TV_STAGE_CENTER.x - f.place.position.x, 0, TV_STAGE_CENTER.z + 2.5 - f.place.position.z).normalize();
+  const facing = placeLocal(f.place, 0, 0, 1).sub(f.place.position).normalize();
+  const dir = toCenter.add(facing.multiplyScalar(0.7)).normalize();
+  // léger travelling avant pendant le plan
+  const push = Math.min(1, f.t / 2600) * 0.6;
+  const dist = (portrait ? 7.4 : 8.2) - push;
+  const pos = head.clone().addScaledVector(dir, dist).add(V(0, portrait ? 1.3 : 0.9, 0));
+  // tête dans la partie haute, au-dessus de l'habillage du bas
+  const target = head.clone().add(V(0, portrait ? -1.45 : -0.95, 0));
+  return { pos, target, fov: portrait ? 44 : 32, speed: 3 };
 }
 
 /**
@@ -259,7 +279,8 @@ export function CameraDirector({ state, mySeat, override, fixed = false }: { sta
       if (!c || c.key !== key || now - c.at > 120) {
         fitCache.current = { key, at: now, shot: fitShot(framePoints(count), aspect0, portrait ? 52 : 38, elev, yaw, safe.current.top, safe.current.bottom) };
       }
-      const shot = fitCache.current!.shot;
+      const star = starFocus(stateRef.current, serverNow());
+      const shot = star ? starShot(star, aspect0) : fitCache.current!.shot;
       const k = 1 - Math.exp(-dt * (shot.speed ?? 1.2));
       curPos.current.lerp(shot.pos, k);
       curTarget.current.lerp(shot.target, k);

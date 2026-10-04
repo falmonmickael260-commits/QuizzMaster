@@ -7,6 +7,7 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { REVEAL_LOCK_MS } from "@shared/config";
 import type { PublicRoomState } from "@shared/types";
+import { starFocus } from "@/lib/focus";
 import { serverNow } from "@/lib/net";
 
 const BEAM_LEN = 15;
@@ -69,7 +70,7 @@ const RIGS_HIGH: Rig[] = [
 ];
 const RIGS_LOW = RIGS_HIGH;
 
-interface Look {
+export interface Look {
   colors: [string, string];
   intensity: number;
   speed: number;
@@ -79,7 +80,7 @@ interface Look {
   strobe: number;
 }
 
-function lookFor(s: PublicRoomState | null, now: number): Look {
+export function lookFor(s: PublicRoomState | null, now: number): Look {
   const base: Look = { colors: ["#ffc94a", "#3a7bff"], intensity: 0.55, speed: 0.35, sweep: 0.42, strobe: 0 };
   if (!s) return base;
   const t = now - s.phaseStartedAt;
@@ -146,14 +147,20 @@ export function StageLights({ state, quality }: { state: PublicRoomState | null;
   const colA = useMemo(() => new THREE.Color(), []);
   const colB = useMemo(() => new THREE.Color(), []);
   const clock = useRef(0);
-  const cur = useRef({ intensity: 0.5, speed: 0.35, sweep: 0.42 });
+  const cur = useRef({ intensity: 0.5, speed: 0.35, sweep: 0.42, focus: 0 });
+  const focusAt = useMemo(() => new THREE.Vector3(), []);
   const stateRef = useRef(state);
   stateRef.current = state;
   const dirV = useMemo(() => new THREE.Vector3(), []);
 
   useFrame((_, dt) => {
-    const look = lookFor(stateRef.current, serverNow());
+    const now = serverNow();
+    const star = starFocus(stateRef.current, now);
+    const look: Look = star ? { colors: ["#ffd76a", "#ffffff"], intensity: 1.15, speed: 0.4, sweep: 0.05, strobe: star.t < 500 ? 9 : 0 } : lookFor(stateRef.current, now);
     const k = 1 - Math.exp(-dt * 3);
+    // projecteurs braqués sur la star (le pupitre), transition rapide
+    if (star) focusAt.copy(star.place.position);
+    cur.current.focus += ((star ? 1 : 0) - cur.current.focus) * (1 - Math.exp(-dt * 5));
     cur.current.intensity += (look.intensity - cur.current.intensity) * k;
     cur.current.speed += (look.speed - cur.current.speed) * k;
     cur.current.sweep += (look.sweep - cur.current.sweep) * k;
@@ -167,8 +174,17 @@ export function StageLights({ state, quality }: { state: PublicRoomState | null;
       const spot = spots.current[i];
       if (!g || !spot) return;
       // balayage : panoramique et inclinaison en figures de Lissajous, orientés vers le cœur du plateau
-      const aimX = -r.x * 0.04 + Math.sin(tt * 1.3 + r.phase) * cur.current.sweep;
-      const aimZ = (r.front ? 0.5 : -0.42) + Math.sin(tt * 0.9 + r.phase * 1.7) * cur.current.sweep * 0.6;
+      let aimX = -r.x * 0.04 + Math.sin(tt * 1.3 + r.phase) * cur.current.sweep;
+      let aimZ = (r.front ? 0.5 : -0.42) + Math.sin(tt * 0.9 + r.phase * 1.7) * cur.current.sweep * 0.6;
+      const f = cur.current.focus;
+      if (f > 0.001) {
+        // orientation qui amène l'axe du faisceau (0,-1,0) sur la star : Rx(θ)·Rz(φ)
+        dirV.set(focusAt.x - r.x, focusAt.y + 0.6 - r.y, focusAt.z - r.z).normalize();
+        const phi = Math.asin(THREE.MathUtils.clamp(dirV.x, -1, 1));
+        const theta = Math.atan2(-dirV.z, -dirV.y);
+        aimX += (phi - aimX) * f;
+        aimZ += (theta - aimZ) * f;
+      }
       g.rotation.set(aimZ, 0, aimX);
       const m = mats[i];
       (m.uniforms.uColor.value as THREE.Color).copy(i % 2 ? colB : colA);

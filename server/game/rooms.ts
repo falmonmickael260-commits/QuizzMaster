@@ -2,9 +2,19 @@ import type { WebSocket } from "ws";
 import type { ClientMessage, ServerMessage } from "../../shared/types";
 import { GameError, Room, type QuestionSource, type RoomTimings } from "./room";
 import { TIMINGS } from "../../shared/config";
+import { TokenBucket, WindowCounter } from "../limits";
+
+/** Plafond de parties simultanées sur le serveur (protège la mémoire). */
+const MAX_ROOMS = 400;
+/** Messages qu'un client peut envoyer : rafale de 40, puis 20 par seconde. */
+const MSG_BURST = 40;
+const MSG_PER_SECOND = 20;
+/** Au-delà de ce nombre de messages refusés, la connexion est coupée. */
+const MAX_DROPPED = 400;
 
 interface Conn {
   ws: WebSocket;
+  ip: string;
   roomCode: string | null;
   playerId: string | null;
 }
@@ -14,6 +24,8 @@ export class RoomManager {
   private rooms = new Map<string, Room>();
   private conns = new Set<Conn>();
   private sweepTimer: ReturnType<typeof setInterval>;
+  /** Créations de parties par adresse IP : 15 par minute au plus. */
+  private creations = new WindowCounter(60_000, 15);
 
   constructor(private source: QuestionSource, private timings: RoomTimings = TIMINGS) {
     this.sweepTimer = setInterval(() => this.sweep(), 10_000);
@@ -45,8 +57,10 @@ export class RoomManager {
     return room;
   }
 
-  attach(ws: WebSocket) {
-    const conn: Conn = { ws, roomCode: null, playerId: null };
+  attach(ws: WebSocket, ip = "?") {
+    const conn: Conn = { ws, ip, roomCode: null, playerId: null };
+    const bucket = new TokenBucket(MSG_BURST, MSG_PER_SECOND);
+    let dropped = 0;
     this.conns.add(conn);
     let alive = true;
     const hb = setInterval(() => {
@@ -56,12 +70,17 @@ export class RoomManager {
     }, 20_000);
     ws.on("pong", () => (alive = true));
     ws.on("message", (raw) => {
+      if (!bucket.take()) {
+        if (++dropped > MAX_DROPPED) ws.terminate();
+        return;
+      }
       let msg: ClientMessage;
       try {
         msg = JSON.parse(raw.toString());
       } catch {
         return;
       }
+      if (!msg || typeof msg !== "object" || typeof (msg as { t?: unknown }).t !== "string") return;
       this.onMessage(conn, msg).catch((e) => this.sendError(conn, e));
     });
     ws.on("close", () => {
@@ -97,6 +116,9 @@ export class RoomManager {
       case "ping":
         return this.send(conn, { t: "pong", clientTime: msg.clientTime, serverNow: Date.now() });
       case "create": {
+        if (this.rooms.size >= MAX_ROOMS) throw new GameError("Le plateau est complet pour le moment, réessaie dans quelques minutes.", "full");
+        if (this.creations.blocked(conn.ip)) throw new GameError("Trop de parties créées d'affilée, patiente une minute.", "rate");
+        this.creations.hit(conn.ip);
         this.detach(conn);
         const room = this.createRoom();
         const p = room.addPlayer(msg.name, msg.character);
