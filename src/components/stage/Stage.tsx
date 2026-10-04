@@ -11,6 +11,7 @@ import { serverNow } from "@/lib/net";
 import { CameraDirector } from "./CameraDirector";
 import { CandidateSeat } from "./Podium";
 import { BigScreen, Confetti, Wheel } from "./SetPieces";
+import { Marquee } from "./Marquee";
 import { StageLights } from "./StageLights";
 import { TV_STAGE_CENTER, TvSet } from "./TvSet";
 import { DEBUG_FX } from "./Studio";
@@ -63,11 +64,13 @@ const FPS_LIMIT = typeof window !== "undefined" ? Number(new URLSearchParams(loc
 // Netteté : résolution native de l'écran (jusqu'à 2x sur Retina) tant que l'appareil suit,
 // abaissée par paliers si la fluidité baisse, puis passage en qualité légère en dernier recours.
 const MAX_DPR = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+/** Qualité légère (téléphones) : sans effets, mais assez de pixels pour des contours nets. */
+const LOW_DPR = 1.75;
 
 export default function Stage({ state, live = false, priv, myId, quality, onQuality, onSelectTarget }: StageProps) {
   useTicker(250);
-  const [dpr, setDpr] = useState(() => (quality === "high" ? MAX_DPR : Math.min(MAX_DPR, 1.25)));
-  useEffect(() => setDpr(quality === "high" ? MAX_DPR : Math.min(MAX_DPR, 1.25)), [quality]);
+  const [dpr, setDpr] = useState(() => (quality === "high" ? MAX_DPR : Math.min(MAX_DPR, LOW_DPR)));
+  useEffect(() => setDpr(quality === "high" ? MAX_DPR : Math.min(MAX_DPR, LOW_DPR)), [quality]);
   const me = state?.players.find((p) => p.id === myId) ?? null;
   const now = serverNow();
   const choosing = state?.phase === "wheel" && state.wheel?.stage === "choose_target" && state.wheel.spinnerId === myId;
@@ -92,7 +95,7 @@ export default function Stage({ state, live = false, priv, myId, quality, onQual
       <Exposure value={quality === "high" ? 1.05 : 1.3} />
       <PerformanceMonitor
         flipflops={4}
-        onIncline={() => setDpr((d) => Math.min(quality === "high" ? MAX_DPR : 1.25, d + 0.25))}
+        onIncline={() => setDpr((d) => Math.min(quality === "high" ? MAX_DPR : LOW_DPR, d + 0.25))}
         onDecline={() => {
           if (dpr > 1) setDpr((d) => Math.max(1, d - 0.25));
           else onQuality?.("low");
@@ -106,6 +109,7 @@ export default function Stage({ state, live = false, priv, myId, quality, onQual
         </Environment>
         <TvSet quality={quality} />
         <StageLights state={state} quality={quality} />
+        <Marquee state={state} />
         <BigScreen state={state} />
         {/* la roue bonus / malus s'installe sur la scène centrale le temps de sa phase */}
         {state?.phase === "wheel" && <Wheel state={state} position={WHEEL_ON_STAGE} rotationY={0} />}
@@ -133,7 +137,7 @@ export default function Stage({ state, live = false, priv, myId, quality, onQual
         <CameraDirector state={state} mySeat={me?.seat ?? null} fixed={live} />
         {/* tampons 8 bits : une valeur invalide isolée (NaN) ne peut plus se propager à tout l'écran via le flou du bloom */}
         {quality === "high" && !DEBUG_FX.includes("nobloom") && (
-          <EffectComposer multisampling={0} frameBufferType={THREE.UnsignedByteType}>
+          <EffectComposer multisampling={4} frameBufferType={THREE.UnsignedByteType}>
             {/* seuil au-dessus de la luminosité des écrans : le halo reste sur les néons, pas sur les textes */}
             <Bloom mipmapBlur intensity={1} luminanceThreshold={0.78} luminanceSmoothing={0.12} radius={0.7} />
             <Vignette eskil={false} offset={0.25} darkness={0.7} />

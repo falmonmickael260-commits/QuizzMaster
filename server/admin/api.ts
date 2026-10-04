@@ -7,6 +7,10 @@ import type { QuestionStore, QuestionInput } from "../store/types";
 import { validateQuestionInput } from "../store/validate";
 import { generateQuestions, generationAvailable } from "./generate";
 import { CATEGORIES } from "../../shared/categories";
+import { WindowCounter, clientIp } from "../limits";
+
+/** Protection contre la recherche du mot de passe : 8 essais ratés par IP et par quart d'heure. */
+const failures = new WindowCounter(15 * 60_000, 8);
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || (process.env.NODE_ENV === "production" ? "" : "admin");
 
@@ -38,7 +42,13 @@ function authorized(req: IncomingMessage): boolean {
 export function createAdminHandler(store: QuestionStore) {
   return async function handle(req: IncomingMessage, res: ServerResponse, pathname: string, query: URLSearchParams): Promise<boolean> {
     if (!pathname.startsWith("/api/admin")) return false;
+    const ip = clientIp(req);
+    if (failures.blocked(ip)) {
+      send(res, 429, { error: "Trop de tentatives, réessayez dans 15 minutes." });
+      return true;
+    }
     if (!authorized(req)) {
+      if (ADMIN_PASSWORD) failures.hit(ip);
       send(res, 401, { error: ADMIN_PASSWORD ? "Mot de passe admin invalide" : "ADMIN_PASSWORD non configuré sur le serveur" });
       return true;
     }

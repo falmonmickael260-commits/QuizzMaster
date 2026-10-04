@@ -16,6 +16,7 @@ import { ModePanel, PlayersBar, QuestionPanel, RoundCard } from "./ui/TvLayout";
 import { WheelControls } from "./ui/WheelControls";
 import { FinalControls } from "./ui/FinalControls";
 import { LowerThird } from "./ui/LowerThird";
+import { StarBanner } from "./ui/StarBanner";
 
 function initialQuality(): Quality {
   if (typeof window === "undefined") return "high";
@@ -77,6 +78,7 @@ export default function Game() {
           {state.phase === "wheel" && <WheelControls />}
           {state.phase === "final" && <FinalControls />}
           <LowerThird />
+          <StarBanner />
         </>
       )}
       <Toasts />

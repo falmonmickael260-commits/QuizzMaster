@@ -8,6 +8,10 @@ import { createQuestionStore } from "./store";
 import { RoomManager } from "./game/rooms";
 import { createAdminHandler } from "./admin/api";
 import { TIMINGS } from "../shared/config";
+import { SECURITY_HEADERS, clientIp } from "./limits";
+
+/** Connexions temps réel simultanées acceptées par adresse IP (plusieurs onglets, une famille derrière la même box…). */
+const MAX_WS_PER_IP = 40;
 
 const dev = process.env.NODE_ENV !== "production";
 // Charge .env, .env.local… comme Next.js (SUPABASE_URL, ADMIN_PASSWORD, etc.)
@@ -33,6 +37,8 @@ async function main() {
   const admin = createAdminHandler(store);
 
   const server = http.createServer(async (req, res) => {
+    for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.setHeader(k, v);
+    if (!dev) res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
     const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
     if (url.pathname === "/api/health") {
       res.writeHead(200, { "content-type": "application/json" });
@@ -44,11 +50,27 @@ async function main() {
   });
 
   const wss = new WebSocketServer({ noServer: true, maxPayload: 16 * 1024 });
-  wss.on("connection", (ws) => rooms.attach(ws));
+  const perIp = new Map<string, number>();
+  wss.on("connection", (ws, req: http.IncomingMessage) => {
+    const ip = clientIp(req);
+    perIp.set(ip, (perIp.get(ip) ?? 0) + 1);
+    ws.on("close", () => {
+      const n = (perIp.get(ip) ?? 1) - 1;
+      if (n > 0) perIp.set(ip, n);
+      else perIp.delete(ip);
+    });
+    rooms.attach(ws, ip);
+  });
   server.on("upgrade", (req, socket, head) => {
     const { pathname } = new URL(req.url || "/", "http://localhost");
-    if (pathname === "/ws") wss.handleUpgrade(req, socket, head, (ws) => wss.emit("connection", ws, req));
-    else upgradeNext(req, socket, head);
+    if (pathname === "/ws") {
+      if ((perIp.get(clientIp(req)) ?? 0) >= MAX_WS_PER_IP) {
+        socket.write("HTTP/1.1 429 Too Many Requests\r\nConnection: close\r\n\r\n");
+        socket.destroy();
+        return;
+      }
+      wss.handleUpgrade(req, socket, head, (ws) => wss.emit("connection", ws, req));
+    } else upgradeNext(req, socket, head);
   });
 
   server.listen(port, hostname, () => {

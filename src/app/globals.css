@@ -2713,3 +2713,89 @@ button.tv-badge {
     font-size: 18px;
   }
 }
+
+/* ═══ Moment star : SOLO réussi ═══ */
+.star-banner {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  z-index: 19;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 22px 10px 12px;
+  border-radius: 999px;
+  overflow: hidden;
+  pointer-events: none;
+  color: #fff;
+  background: linear-gradient(100deg, rgba(64, 40, 4, 0.92), rgba(24, 14, 2, 0.92));
+  border: 2px solid #ffd76a;
+  box-shadow: 0 0 0 4px rgba(255, 215, 106, 0.18), 0 0 46px rgba(255, 190, 60, 0.55), 0 14px 40px rgba(0, 0, 0, 0.5);
+  transform: translateX(-50%);
+  animation: star-in 0.55s cubic-bezier(0.2, 1.3, 0.3, 1) forwards;
+}
+.star-rays {
+  position: absolute;
+  inset: -120% -20%;
+  background: repeating-conic-gradient(from 0deg, rgba(255, 215, 106, 0.16) 0 8deg, transparent 8deg 22deg);
+  animation: menu-spin 9s linear infinite;
+  z-index: -1;
+}
+.star-banner .avatar {
+  flex: none;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 106, 0.8));
+}
+.star-kicker {
+  font-size: 14px;
+  letter-spacing: 3px;
+  color: #ffd76a;
+}
+.star-name {
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+}
+.star-pts {
+  margin-left: 6px;
+  font-size: 40px;
+  color: #ffd76a;
+  text-shadow: 0 0 18px rgba(255, 200, 70, 0.9);
+}
+@keyframes star-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -30px) scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+@media (max-width: 760px) {
+  .star-banner {
+    top: 74px;
+    gap: 10px;
+    padding: 8px 16px 8px 8px;
+    max-width: calc(100% - 20px);
+  }
+  .star-banner .avatar {
+    width: 46px;
+    height: 46px;
+  }
+  .star-kicker {
+    font-size: 11px;
+    letter-spacing: 2px;
+  }
+  .star-name {
+    font-size: 21px;
+  }
+  .star-pts {
+    font-size: 28px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .star-rays {
+    animation: none;
+  }
+}
