@@ -47,7 +47,7 @@ jobs:
           [ -n "$uid" ] || uid=$(head -1 uploads.txt | cut -d' ' -f1)
           key=$(echo "$dl" | sed -E 's#.*/download/([^?]+).*#\1#')
           base=$(echo "$PACK" | grep -oE 'https://[^/]+')
-          resp=$(curl -sL -c $J -b $J -A "$UA" -H "X-Requested-With: XMLHttpRequest" -X POST -d "csrf_token=$csrf2" "$base/file/$uid?source=game_download&key=$key")
+          resp=$(curl -sL -c $J -b $J -A "$UA" -H "X-Requested-With: XMLHttpRequest" -X POST -d "csrf_token=$csrf2" "$PACK/file/$uid?source=game_download&key=$key")
           echo "réponse : ${resp:0:200}"
           file=$(echo "$resp" | python3 -c 'import sys,json; print(json.load(sys.stdin).get("url",""))')
           [ -n "$file" ] || exit 1
