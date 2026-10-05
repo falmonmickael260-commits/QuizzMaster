@@ -5,9 +5,11 @@
 ./Universal Base Characters[Standard]/Base Characters/Godot - UE/Superhero_Male_FullBody.gltf
 ./Universal Base Characters[Standard]/Base Characters/Godot - UE/T_Eye_Brown.png
 ./Universal Base Characters[Standard]/Base Characters/Godot - UE/T_Eye_Normal.png
+./Universal Base Characters[Standard]/Base Characters/Godot - UE/T_Eye_Normal_png.png
 ./Universal Base Characters[Standard]/Base Characters/Godot - UE/T_Hair_1_BaseColor.png
 ./Universal Base Characters[Standard]/Base Characters/Godot - UE/T_Hair_1_BaseColor_png.png
 ./Universal Base Characters[Standard]/Base Characters/Godot - UE/T_Hair_1_Normal.png
+./Universal Base Characters[Standard]/Base Characters/Godot - UE/T_Hair_1_Normal_png.png
 ./Universal Base Characters[Standard]/Base Characters/Godot - UE/T_Hair_2_BaseColor.png
 ./Universal Base Characters[Standard]/Base Characters/Godot - UE/T_Hair_2_BaseColor_png.png
 ./Universal Base Characters[Standard]/Base Characters/Godot - UE/T_Hair_2_Normal.png
