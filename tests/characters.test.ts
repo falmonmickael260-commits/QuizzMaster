@@ -28,3 +28,15 @@ describe("personnalisation des personnages", () => {
     expect(getCharacter("c-nova-9-0-0-0-0-0")).toEqual(CHARACTERS[0]);
   });
 });
+
+describe("personnages modélisés", () => {
+  it("accepte les codes q- valides et refuse les autres", async () => {
+    const { CHARACTER_MODELS, encodeModel, modelOf } = await import("../shared/characters");
+    const code = encodeModel(CHARACTER_MODELS.length - 1, OUTFIT_COLORS.length);
+    expect(isValidCharacter(code)).toBe(true);
+    expect(modelOf(code)).toEqual({ model: CHARACTER_MODELS.length - 1, color: OUTFIT_COLORS.length });
+    for (const bad of [`q-${CHARACTER_MODELS.length}-0`, `q-0-${OUTFIT_COLORS.length + 1}`, "q-a-1", "q-1"]) expect(isValidCharacter(bad)).toBe(false);
+    // les anciens personnages restent affichables
+    expect(modelOf("nova").model).toBeGreaterThanOrEqual(0);
+  });
+});

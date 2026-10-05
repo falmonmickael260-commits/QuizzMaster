@@ -4,22 +4,7 @@
 // choix et personnalisation du personnage, pseudo, manches, créer / regarder / rejoindre.
 
 import { useEffect, useRef, useState } from "react";
-import {
-  ACCESSORIES,
-  ACCESSORY_COLORS,
-  ACCESSORY_LABELS,
-  CHARACTERS,
-  HAIR_COLORS,
-  HAIR_STYLES,
-  HAIR_STYLE_LABELS,
-  OUTFIT_COLORS,
-  SKIN_TONES,
-  encodeLook,
-  getCharacter,
-  isValidCharacter,
-  lookOf,
-  type CharacterLook,
-} from "@shared/characters";
+import { CHARACTER_MODELS, OUTFIT_COLORS, encodeModel, isValidCharacter, modelOf } from "@shared/characters";
 import { DEFAULT_ROUNDS, MAX_ROUNDS } from "@shared/config";
 import { useGame } from "@/lib/net";
 import { audio } from "@/lib/audio";
@@ -28,7 +13,6 @@ import { CharacterPreview } from "./CharacterPreview";
 import { Avatar } from "./Avatar";
 
 const PROFILE_KEY = "bq-profile";
-type Tab = "outfit" | "accessory" | "hair" | "skin";
 
 function Logo() {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -68,11 +52,10 @@ export function Home() {
   const startDemo = useGame((s) => s.startDemo);
   const status = useGame((s) => s.status);
   const [name, setName] = useState("");
-  const [character, setCharacter] = useState(CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)].id);
+  const [character, setCharacter] = useState(() => encodeModel(Math.floor(Math.random() * 8), 0));
   const [rounds, setRounds] = useState(DEFAULT_ROUNDS);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
-  const [tab, setTab] = useState<Tab | null>(null);
   const [settings, setSettings] = useState(false);
   const [muted, setMuted] = useState(audio.muted);
   const codeRef = useRef<HTMLInputElement>(null);
@@ -82,7 +65,11 @@ export function Home() {
     try {
       const p = JSON.parse(localStorage.getItem(PROFILE_KEY) || "null");
       if (p?.name) setName(p.name);
-      if (isValidCharacter(p?.character)) setCharacter(p.character);
+      // les anciens profils (personnages ronds) sont convertis vers le modèle 3D correspondant
+      if (isValidCharacter(p?.character)) {
+        const m = modelOf(p.character);
+        setCharacter(encodeModel(m.model, m.color));
+      }
     } catch {
       /* ignore */
     }
@@ -91,7 +78,7 @@ export function Home() {
     if (params.has("partie-test")) {
       const manches = Math.max(1, Math.min(6, Number(params.get("manches")) || 2));
       const joueurs = Math.max(2, Math.min(8, Number(params.get("joueurs")) || 4));
-      startDemo(params.get("pseudo") || "Alex", params.get("perso") || "hugo", manches, joueurs - 1);
+      startDemo(params.get("pseudo") || "Alex", params.get("perso") || encodeModel(0, 0), manches, joueurs - 1);
       return;
     }
     const room = params.get("room");
@@ -141,19 +128,8 @@ export function Home() {
     startDemo(valid ? name.trim() : "Alex", character, rounds);
   };
 
-  const preset = getCharacter(character);
-  const look = lookOf(character);
-  const baseIndex = Math.max(0, CHARACTERS.findIndex((c) => c.id === look.base));
-  const pickBase = (i: number) => setCharacter(CHARACTERS[(i + CHARACTERS.length) % CHARACTERS.length].id);
-  const edit = (patch: Partial<CharacterLook>) => setCharacter(encodeLook({ ...look, ...patch }));
-
-  const swatches = (list: string[], current: number, onPick: (i: number) => void, label: string) => (
-    <div className="menu-swatches" role="radiogroup" aria-label={label}>
-      {list.map((c, i) => (
-        <button key={c} type="button" role="radio" aria-checked={i === current} className={`menu-swatch ${i === current ? "active" : ""}`} style={{ background: c }} onClick={() => onPick(i)} title={c} />
-      ))}
-    </div>
-  );
+  const { model: baseIndex, color } = modelOf(character);
+  const pickBase = (i: number) => setCharacter(encodeModel((i + CHARACTER_MODELS.length) % CHARACTER_MODELS.length, color));
 
   return (
     <div className="menu">
@@ -236,16 +212,16 @@ export function Home() {
           <div className="menu-perso-left">
             <h2>Votre personnage</h2>
             <div className="menu-grid" role="radiogroup" aria-label="Personnage">
-              {CHARACTERS.map((c, i) => (
-                <button key={c.id} type="button" role="radio" aria-checked={i === baseIndex} aria-label={c.name} title={c.name} className={`menu-face ${i === baseIndex ? "active" : ""}`} onClick={() => pickBase(i)}>
-                  <Avatar character={c.id} size={46} />
+              {CHARACTER_MODELS.map((m, i) => (
+                <button key={m.file} type="button" role="radio" aria-checked={i === baseIndex} aria-label={m.label} title={m.label} className={`menu-face ${i === baseIndex ? "active" : ""}`} onClick={() => pickBase(i)}>
+                  <Avatar character={encodeModel(i, 0)} size={46} />
                 </button>
               ))}
             </div>
           </div>
           <div className="menu-stage">
             <div className="menu-preview">
-              <CharacterPreview preset={preset} distance={6.2} />
+              <CharacterPreview character={character} distance={6.2} />
             </div>
             <div className="menu-spot" aria-hidden />
             <div className="menu-pedestal" />
@@ -258,19 +234,13 @@ export function Home() {
           </div>
           <div className="menu-perso-right">
             <div className="menu-box">
-              <h3>Personnaliser</h3>
-              <div className="menu-tabs">
-                {(
-                  [
-                    ["outfit", "👕", "Tenue"],
-                    ["accessory", "🎧", "Accessoire"],
-                    ["hair", "💇", "Coiffure"],
-                    ["skin", "🖌️", "Teint"],
-                  ] as const
-                ).map(([id, icon, label]) => (
-                  <button key={id} type="button" className={tab === id ? "active" : ""} aria-pressed={tab === id} title={label} aria-label={label} onClick={() => setTab(tab === id ? null : id)}>
-                    {icon}
-                  </button>
+              <h3>
+                {CHARACTER_MODELS[baseIndex].label} · couleur de la tenue
+              </h3>
+              <div className="menu-swatches" role="radiogroup" aria-label="Couleur de la tenue">
+                <button type="button" role="radio" aria-checked={color === 0} className={`menu-swatch origin ${color === 0 ? "active" : ""}`} title="Tenue d'origine" aria-label="Tenue d'origine" onClick={() => setCharacter(encodeModel(baseIndex, 0))} />
+                {OUTFIT_COLORS.map((c, i) => (
+                  <button key={c} type="button" role="radio" aria-checked={color === i + 1} className={`menu-swatch ${color === i + 1 ? "active" : ""}`} style={{ background: c }} title={c} aria-label={`Couleur ${i + 1}`} onClick={() => setCharacter(encodeModel(baseIndex, i + 1))} />
                 ))}
               </div>
             </div>
@@ -297,48 +267,6 @@ export function Home() {
               </div>
             </div>
           </div>
-          {tab && (
-            <div className="menu-custom">
-              {tab === "outfit" && (
-                <>
-                  <h4>Couleur de la tenue</h4>
-                  {swatches(OUTFIT_COLORS, look.outfit, (i) => edit({ outfit: i }), "Couleur de la tenue")}
-                </>
-              )}
-              {tab === "accessory" && (
-                <>
-                  <h4>Accessoire</h4>
-                  <div className="menu-chips">
-                    {ACCESSORIES.map((a) => (
-                      <button key={a} type="button" className={a === look.accessory ? "active" : ""} onClick={() => edit({ accessory: a })}>
-                        {ACCESSORY_LABELS[a]}
-                      </button>
-                    ))}
-                  </div>
-                  {look.accessory !== "none" && swatches(ACCESSORY_COLORS, look.accessoryColor, (i) => edit({ accessoryColor: i }), "Couleur de l'accessoire")}
-                </>
-              )}
-              {tab === "hair" && (
-                <>
-                  <h4>Coiffure</h4>
-                  <div className="menu-chips">
-                    {HAIR_STYLES.map((h) => (
-                      <button key={h} type="button" className={h === look.hairStyle ? "active" : ""} onClick={() => edit({ hairStyle: h })}>
-                        {HAIR_STYLE_LABELS[h]}
-                      </button>
-                    ))}
-                  </div>
-                  {swatches(HAIR_COLORS, look.hair, (i) => edit({ hair: i }), "Couleur des cheveux")}
-                </>
-              )}
-              {tab === "skin" && (
-                <>
-                  <h4>Teint</h4>
-                  {swatches(SKIN_TONES, look.skin, (i) => edit({ skin: i }), "Teint")}
-                </>
-              )}
-            </div>
-          )}
         </section>
 
         <button type="button" className="menu-cta create" disabled={!ready} onClick={onCreate}>

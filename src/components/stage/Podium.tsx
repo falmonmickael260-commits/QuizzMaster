@@ -2,15 +2,14 @@
 
 import { RoundedBox } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { getCharacter } from "@shared/characters";
 import type { PrivateState, PublicPlayer, PublicRoomState } from "@shared/types";
 import { drawPodiumFront, drawPodiumTop, podiumFrontSig, podiumTopSig } from "@/lib/screens";
 import { candidateMood } from "@/lib/mood";
 import { SEATS, type Seat } from "@/lib/layout";
 import { serverNow } from "@/lib/net";
-import { Character } from "./Character";
+import { ModelCharacter } from "./ModelCharacter";
 import { SCREEN_TINT, useCanvasTexture } from "./useCanvasTexture";
 
 // pupitres noir laqué à liseré doré, façon grand plateau TV
@@ -87,7 +86,9 @@ export function CandidateSeat({ seat, place, player, state, priv, color, isMe, s
       {/* personnage installé derrière son pupitre */}
       {player && (
         <group position={[0, 0, -0.62]}>
-          <Character preset={getCharacter(player.character)} mood={mood} lookAt={look} seed={seat * 1.37} />
+          <Suspense fallback={null}>
+            <ModelCharacter character={player.character} mood={mood} seed={seat * 1.37} />
+          </Suspense>
         </group>
       )}
 

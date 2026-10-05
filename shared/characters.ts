@@ -109,9 +109,67 @@ function parseCustom(id: string): CharacterLook | null {
   return { base: m[1], hairStyle: HAIR_STYLES[hs], hair, skin, outfit, accessory: ACCESSORIES[acc], accessoryColor: accColor };
 }
 
+// ─── Personnages 3D modélisés (packs CC0 de Quaternius) ───────────────────────
+// Code transmis : q-<modèle>-<couleur> (couleur 0 = tenue d'origine, sinon index+1 dans OUTFIT_COLORS).
+
+export interface CharacterModel {
+  /** Nom du fichier dans public/models (sans extension). */
+  file: string;
+  label: string;
+}
+
+export const CHARACTER_MODELS: CharacterModel[] = [
+  { file: "h-casual-hoodie", label: "Sweat" },
+  { file: "f-casual", label: "Décontractée" },
+  { file: "h-suit", label: "Costume" },
+  { file: "f-formal", label: "Chic" },
+  { file: "h-casual", label: "Décontracté" },
+  { file: "f-suit", label: "Tailleur" },
+  { file: "h-punk", label: "Punk" },
+  { file: "f-punk", label: "Punk" },
+  { file: "h-worker", label: "Ouvrier" },
+  { file: "f-worker", label: "Ouvrière" },
+  { file: "h-beach", label: "Plage" },
+  { file: "f-adventurer", label: "Aventurière" },
+  { file: "h-adventurer", label: "Aventurier" },
+  { file: "f-scifi", label: "Science-fiction" },
+  { file: "h-farmer", label: "Fermier" },
+  { file: "f-soldier", label: "Militaire" },
+  { file: "h-spacesuit", label: "Astronaute" },
+  { file: "f-witch", label: "Sorcière" },
+  { file: "h-king", label: "Roi" },
+  { file: "f-medieval", label: "Médiévale" },
+  { file: "h-swat", label: "Intervention" },
+];
+
+/** Personnage modélisé utilisé pour chaque ancien preset (les candidats simulés et les anciens profils en profitent). */
+const PRESET_MODEL: Record<string, number> = { nova: 1, rocco: 4, maya: 7, hugo: 0, yuna: 3, sam: 8, lily: 5, karim: 2, zoe: 11, leo: 10, ines: 13, max: 6 };
+
+export function encodeModel(model: number, color: number): string {
+  return `q-${model}-${color}`;
+}
+
+function parseModel(id: string): { model: number; color: number } | null {
+  const m = /^q-(\d{1,2})-(\d{1,2})$/.exec(id);
+  if (!m) return null;
+  const model = Number(m[1]);
+  const color = Number(m[2]);
+  if (model >= CHARACTER_MODELS.length || color > OUTFIT_COLORS.length) return null;
+  return { model, color };
+}
+
+/** Modèle 3D et couleur de tenue de n'importe quel identifiant de personnage (codes q-, presets et anciens codes c-). */
+export function modelOf(id: string | undefined): { model: number; color: number } {
+  const q = id ? parseModel(id) : null;
+  if (q) return q;
+  const custom = id ? parseCustom(id) : null;
+  if (custom) return { model: PRESET_MODEL[custom.base] ?? 0, color: custom.outfit + 1 };
+  return { model: (id ? PRESET_MODEL[id] : undefined) ?? 0, color: 0 };
+}
+
 /** Accepte un identifiant de preset ou un code de personnage personnalisé valide. */
 export function isValidCharacter(id: unknown): id is string {
-  return typeof id === "string" && id.length <= 40 && (!!CHARACTER_BY_ID[id] || !!parseCustom(id));
+  return typeof id === "string" && id.length <= 40 && (!!CHARACTER_BY_ID[id] || !!parseCustom(id) || !!parseModel(id));
 }
 
 function lighten(hex: string, k: number) {
