@@ -28,6 +28,7 @@ jobs:
         run: |
           for u in $PACK; do
             echo "== $u"
+            curl -sI -A "Mozilla/5.0" "$u" | head -8
             curl -sL -A "Mozilla/5.0" "$u" -o /tmp/p.html
             grep -oE '(href|src|data-src)="[^"]+"' /tmp/p.html | grep -viE '\.(css|svg|ico|woff2?)"|#' | sort -u | head -150
             grep -iE 'data-|button|itch' /tmp/p.html | grep -v 'api.js' | head -40
