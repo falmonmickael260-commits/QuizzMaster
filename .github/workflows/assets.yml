@@ -28,8 +28,18 @@ jobs:
         run: |
           for u in $PACK; do
             echo "== $u"
-            curl -sL -A "Mozilla/5.0" "$u" | grep -oE '(href|src|data-src)="[^"]+"' | grep -viE '\.(css|svg|ico|woff2?)"|#' | sort -u | head -150
+            curl -sL -A "Mozilla/5.0" "$u" -o /tmp/p.html
+            grep -oE '(href|src|data-src)="[^"]+"' /tmp/p.html | grep -viE '\.(css|svg|ico|woff2?)"|#' | sort -u | head -150
+            grep -oiE '.{0,120}itch.{0,160}' /tmp/p.html | grep -v api.js | head -20
+            # images d'aperçu enregistrées pour les montrer
+            mkdir -p assets-src/apercus
+            for img in $(grep -oE 'src="/assets/images/fullres/[^"]+"' /tmp/p.html | sed 's/src="//;s/"$//' | sort -u); do
+              curl -sL "https://quaternius.com$img" -o "assets-src/apercus/$(basename $img)"
+            done
           done
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets-src/apercus && git commit -m "Aperçus de packs de personnages" && git push || true
       - name: Téléchargement gratuit itch.io
         if: inputs.match != 'LIST'
         env: { PACK: "${{ inputs.pack }}", MATCH: "${{ inputs.match }}" }
