@@ -1,0 +1,19 @@
+name: Assets
+# Récupère des modèles 3D libres de droits (CC0) depuis le site officiel de leur auteur.
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "probe = lister les liens de téléchargement"
+        default: probe
+jobs:
+  assets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Liens de la page Quaternius
+        if: inputs.action == 'probe'
+        run: |
+          for u in https://quaternius.com/packs/universalbasecharacters.html https://quaternius.com/packs/universalanimationlibrary.html https://quaternius.itch.io/universal-base-characters; do
+            echo "== $u"
+            curl -sL -A "Mozilla/5.0" "$u" | grep -oE 'href="[^"]+"' | sort -u | grep -viE '\.(css|png|jpg|svg|ico)"' | head -80
+          done
