@@ -1,0 +1,93 @@
+── tree
+./All together/Blends/All together.blend
+./All together/FBX/All together.fbx
+./Humanoid Rigs/All Together/Blends/Humanoid Rig.blend
+./Humanoid Rigs/All Together/FBX/Humanoid Rig.fbx
+./Humanoid Rigs/Individual Characters/Blends/Adventurer.blend
+./Humanoid Rigs/Individual Characters/Blends/Casual.blend
+./Humanoid Rigs/Individual Characters/Blends/Formal.blend
+./Humanoid Rigs/Individual Characters/Blends/Medieval.blend
+./Humanoid Rigs/Individual Characters/Blends/Punk.blend
+./Humanoid Rigs/Individual Characters/Blends/SciFi.blend
+./Humanoid Rigs/Individual Characters/Blends/Soldier.blend
+./Humanoid Rigs/Individual Characters/Blends/Suit.blend
+./Humanoid Rigs/Individual Characters/Blends/Witch.blend
+./Humanoid Rigs/Individual Characters/Blends/Worker.blend
+./Humanoid Rigs/Individual Characters/FBX/Adventurer.fbx
+./Humanoid Rigs/Individual Characters/FBX/Casual.fbx
+./Humanoid Rigs/Individual Characters/FBX/Formal.fbx
+./Humanoid Rigs/Individual Characters/FBX/Medieval.fbx
+./Humanoid Rigs/Individual Characters/FBX/Punk.fbx
+./Humanoid Rigs/Individual Characters/FBX/SciFi.fbx
+./Humanoid Rigs/Individual Characters/FBX/Soldier.fbx
+./Humanoid Rigs/Individual Characters/FBX/Suit.fbx
+./Humanoid Rigs/Individual Characters/FBX/Witch.fbx
+./Humanoid Rigs/Individual Characters/FBX/Worker.fbx
+./Individual Characters/Blends/Adventurer.blend
+./Individual Characters/Blends/Casual.blend
+./Individual Characters/Blends/Formal.blend
+./Individual Characters/Blends/Medieval.blend
+./Individual Characters/Blends/Punk.blend
+./Individual Characters/Blends/SciFi.blend
+./Individual Characters/Blends/Soldier.blend
+./Individual Characters/Blends/Suit.blend
+./Individual Characters/Blends/Witch.blend
+./Individual Characters/Blends/Worker.blend
+./Individual Characters/FBX/Adventurer.fbx
+./Individual Characters/FBX/Casual.fbx
+./Individual Characters/FBX/Formal.fbx
+./Individual Characters/FBX/Medieval.fbx
+./Individual Characters/FBX/Punk.fbx
+./Individual Characters/FBX/SciFi.fbx
+./Individual Characters/FBX/Soldier.fbx
+./Individual Characters/FBX/Suit.fbx
+./Individual Characters/FBX/Witch.fbx
+./Individual Characters/FBX/Worker.fbx
+./Individual Characters/glTF/Adventurer.gltf
+./Individual Characters/glTF/Casual.gltf
+./Individual Characters/glTF/Formal.gltf
+./Individual Characters/glTF/Medieval.gltf
+./Individual Characters/glTF/Punk.gltf
+./Individual Characters/glTF/SciFi.gltf
+./Individual Characters/glTF/Soldier.gltf
+./Individual Characters/glTF/Suit.gltf
+./Individual Characters/glTF/Witch.gltf
+./Individual Characters/glTF/Worker.gltf
+./Separate Skeletal Meshes and Animations/Adventurer/Adventurer_Backpack.fbx
+./Separate Skeletal Meshes and Animations/Adventurer/Adventurer_Body.fbx
+./Separate Skeletal Meshes and Animations/Adventurer/Adventurer_Feet.fbx
+./Separate Skeletal Meshes and Animations/Adventurer/Adventurer_Head.fbx
+./Separate Skeletal Meshes and Animations/Adventurer/Adventurer_Legs.fbx
+./Separate Skeletal Meshes and Animations/Casual/Casual_Body.fbx
+./Separate Skeletal Meshes and Animations/Casual/Casual_Feet.fbx
+./Separate Skeletal Meshes and Animations/Casual/Casual_Head.fbx
+./Separate Skeletal Meshes and Animations/Casual/Casual_Legs.fbx
+./Separate Skeletal Meshes and Animations/Formal/Formal_Body.fbx
+./Separate Skeletal Meshes and Animations/Formal/Formal_Feet.fbx
+./Separate Skeletal Meshes and Animations/Formal/Formal_Head.fbx
+./Separate Skeletal Meshes and Animations/Formal/Formal_Legs.fbx
+./Separate Skeletal Meshes and Animations/Medieval/Medieval_Body.fbx
+./Separate Skeletal Meshes and Animations/Medieval/Medieval_Feet.fbx
+./Separate Skeletal Meshes and Animations/Medieval/Medieval_Head.fbx
+./Separate Skeletal Meshes and Animations/Medieval/Medieval_Legs.fbx
+./Separate Skeletal Meshes and Animations/Punk/Punk_Body.fbx
+./Separate Skeletal Meshes and Animations/Punk/Punk_Feet.fbx
+./Separate Skeletal Meshes and Animations/Punk/Punk_Head.fbx
+./Separate Skeletal Meshes and Animations/Punk/Punk_Legs.fbx
+./Separate Skeletal Meshes and Animations/SciFi/SciFi_Body.fbx
+./Separate Skeletal Meshes and Animations/SciFi/SciFi_Feet.fbx
+./Separate Skeletal Meshes and Animations/SciFi/SciFi_Head.fbx
+./Separate Skeletal Meshes and Animations/SciFi/SciFi_Legs.fbx
+./Separate Skeletal Meshes and Animations/Soldier/Soldier_Body.fbx
+./Separate Skeletal Meshes and Animations/Soldier/Soldier_Feet.fbx
+./Separate Skeletal Meshes and Animations/Soldier/Soldier_Head.fbx
+./Separate Skeletal Meshes and Animations/Soldier/Soldier_Legs.fbx
+./Separate Skeletal Meshes and Animations/Suit/Suit_Body.fbx
+./Separate Skeletal Meshes and Animations/Suit/Suit_Feet.fbx
+./Separate Skeletal Meshes and Animations/Suit/Suit_Head.fbx
+./Separate Skeletal Meshes and Animations/Suit/Suit_Legs.fbx
+./Separate Skeletal Meshes and Animations/Witch/Witch_Body.fbx
+./Separate Skeletal Meshes and Animations/Witch/Witch_Feet.fbx
+./Separate Skeletal Meshes and Animations/Witch/Witch_Head.fbx
+./Separate Skeletal Meshes and Animations/Witch/Witch_Legs.fbx
+./Separate Skeletal Meshes and Animations/Worker/Worker_Body.fbx
