@@ -64,6 +64,26 @@ jobs:
           (cd /tmp/pack && find . \( -iname '*.gltf' -o -iname '*.glb' \) | sort) > /tmp/models.txt
           if [ -n "$ONLY" ]; then grep -E "$ONLY" /tmp/models.txt > /tmp/m2.txt || true; mv /tmp/m2.txt /tmp/models.txt; fi
           echo "── à convertir :"; cat /tmp/models.txt
+          # textures référencées sous un autre nom (ex. « X_png.png » pour « X.png ») : on les retrouve dans le pack
+          python3 - <<'PY'
+          import json,os,glob
+          for line in open("/tmp/models.txt"):
+              f=os.path.join("/tmp/pack",line.strip()[2:])
+              if not f.lower().endswith(".gltf"): continue
+              d=os.path.dirname(f); g=json.load(open(f))
+              for im in g.get("images",[]):
+                  u=im.get("uri","")
+                  if not u or u.startswith("data:") or os.path.exists(os.path.join(d,u)): continue
+                  base=os.path.basename(u); cands=[base, base.replace("_png.png",".png"), base.replace("_png","")]
+                  hit=None
+                  for c in cands:
+                      found=glob.glob(f"/tmp/pack/**/{glob.escape(c)}", recursive=True)
+                      if found: hit=found[0]; break
+                  if hit:
+                      os.makedirs(os.path.dirname(os.path.join(d,u)),exist_ok=True)
+                      os.system(f'cp "{hit}" "{os.path.join(d,u)}"'); print("texture retrouvée :",u,"←",hit)
+                  else: print("texture manquante :",u)
+          PY
           echo "── tree" > "$out/LISTE.txt"; (cd /tmp/pack && find . -type f | sort) >> "$out/LISTE.txt"
           while read -r f; do
             name=$(echo "$f" | sed 's#^\./##; s#[^A-Za-z0-9._-]#_#g; s#\.gltf$##i; s#\.glb$##i')
