@@ -30,7 +30,7 @@ jobs:
             echo "== $u"
             curl -sL -A "Mozilla/5.0" "$u" -o /tmp/p.html
             grep -oE '(href|src|data-src)="[^"]+"' /tmp/p.html | grep -viE '\.(css|svg|ico|woff2?)"|#' | sort -u | head -150
-            grep -oiE '.{0,120}itch.{0,160}' /tmp/p.html | grep -v api.js | head -20
+            grep -A12 'attachBuyButton' /tmp/p.html | head -30
             # images d'aperçu enregistrées pour les montrer
             mkdir -p assets-src/apercus
             for img in $(grep -oE 'src="/assets/images/fullres/[^"]+"' /tmp/p.html | sed 's/src="//;s/"$//' | sort -u); do
