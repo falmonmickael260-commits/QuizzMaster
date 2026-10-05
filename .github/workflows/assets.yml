@@ -1,19 +1,56 @@
 name: Assets
-# Récupère des modèles 3D libres de droits (CC0) depuis le site officiel de leur auteur.
+# Récupère les modèles 3D libres de droits (CC0) de Quaternius depuis sa page itch.io officielle
+# (téléchargement gratuit « No thanks, just take me to the downloads »), puis les publie en artefact.
 on:
   workflow_dispatch:
     inputs:
-      action:
-        description: "probe = lister les liens de téléchargement"
-        default: probe
+      pack:
+        description: "Page itch.io du pack"
+        default: https://quaternius.itch.io/universal-base-characters
+      match:
+        description: "Motif du fichier à prendre (ex. Standard)"
+        default: Standard
 jobs:
   assets:
     runs-on: ubuntu-latest
     steps:
-      - name: Liens de la page Quaternius
-        if: inputs.action == 'probe'
+      - name: Téléchargement gratuit itch.io
+        env: { PACK: "${{ inputs.pack }}", MATCH: "${{ inputs.match }}" }
         run: |
-          for u in https://quaternius.com/packs/universalbasecharacters.html https://quaternius.com/packs/universalanimationlibrary.html https://quaternius.itch.io/universal-base-characters; do
-            echo "== $u"
-            curl -sL -A "Mozilla/5.0" "$u" | grep -oE 'href="[^"]+"' | sort -u | grep -viE '\.(css|png|jpg|svg|ico)"' | head -80
-          done
+          set -e
+          J=cookies.txt; UA="Mozilla/5.0 (X11; Linux x86_64)"
+          page=$(curl -sL -c $J -b $J -A "$UA" "$PACK")
+          csrf=$(echo "$page" | grep -oE 'name="csrf_token" value="[^"]+"' | head -1 | sed 's/.*value="//;s/"$//')
+          echo "csrf: ${csrf:0:6}…"
+          dl=$(curl -sL -c $J -b $J -A "$UA" -X POST -d "csrf_token=$csrf" "$PACK/download_url" | python3 -c 'import sys,json; print(json.load(sys.stdin).get("url",""))')
+          echo "page de téléchargement : $dl"
+          [ -n "$dl" ] || exit 1
+          html=$(curl -sL -c $J -b $J -A "$UA" "$dl")
+          csrf2=$(echo "$html" | grep -oE 'name="csrf_token" value="[^"]+"' | head -1 | sed 's/.*value="//;s/"$//')
+          echo "$html" | python3 - "$MATCH" > uploads.txt <<'PY'
+          import sys,re
+          html=sys.stdin.read(); m=sys.argv[1].lower()
+          for uid,name in re.findall(r'data-upload_id="(\d+)".*?class="name" title="([^"]+)"', html, re.S):
+              print(uid, name, "*" if m in name.lower() else "")
+          PY
+          cat uploads.txt
+          uid=$(grep '\*$' uploads.txt | head -1 | cut -d' ' -f1)
+          [ -n "$uid" ] || uid=$(head -1 uploads.txt | cut -d' ' -f1)
+          key=$(echo "$dl" | grep -oE 'download/[^/?]+' | cut -d/ -f2)
+          base=$(echo "$PACK" | grep -oE 'https://[^/]+')
+          file=$(curl -sL -c $J -b $J -A "$UA" -X POST -d "csrf_token=$csrf2" "$base/file/$uid?source=game_download&key=$key" | python3 -c 'import sys,json; print(json.load(sys.stdin).get("url",""))')
+          [ -n "$file" ] || exit 1
+          curl -sL -A "$UA" -o pack.zip "$file"
+          ls -la pack.zip
+          mkdir -p pack && unzip -q pack.zip -d pack
+          echo "── contenu (glTF/GLB) :"
+          find pack -iname '*.gltf' -o -iname '*.glb' | head -60
+          find pack -iname '*.gltf' -o -iname '*.glb' -o -iname '*.bin' -o -iname '*.png' | grep -iE 'gltf|glb' | head -200 > list.txt || true
+          mkdir -p out && find pack \( -iname '*.glb' -o -iname '*.gltf' -o -iname '*.bin' \) -exec cp --parents {} out/ \;
+          find pack -ipath '*gltf*' -iname '*.png' -exec cp --parents {} out/ \; || true
+          du -sh out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: quaternius-gltf
+          path: out
+          retention-days: 7
