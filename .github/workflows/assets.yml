@@ -26,8 +26,10 @@ jobs:
         if: inputs.match == 'LIST'
         env: { PACK: "${{ inputs.pack }}" }
         run: |
-          curl -sL -A "Mozilla/5.0" "$PACK" | grep -oE 'href="https://[a-z0-9-]+\.itch\.io/[^"/]+"' | sort -u
-          curl -sL -A "Mozilla/5.0" "$PACK" | grep -oE 'class="title game_link"[^>]*>[^<]+' | sed 's/.*>//' | head -100
+          for u in $PACK; do
+            echo "== $u"
+            curl -sL -A "Mozilla/5.0" "$u" | grep -oE '(href|src|data-src)="[^"]+"' | grep -viE '\.(css|svg|ico|woff2?)"|#' | sort -u | head -150
+          done
       - name: Téléchargement gratuit itch.io
         if: inputs.match != 'LIST'
         env: { PACK: "${{ inputs.pack }}", MATCH: "${{ inputs.match }}" }
