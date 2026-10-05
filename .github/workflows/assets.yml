@@ -49,8 +49,13 @@ jobs:
           [ -n "$key" ] || key=$(python3 -c 'import sys,urllib.parse; print(urllib.parse.unquote(sys.argv[1].split("/download/")[1].split("?")[0]))' "$dl")
           echo "clé : ${key:0:8}…"; grep -oE '"(key|upload_id|game_id)":[^,}]{0,60}' dl.html | head -5
           base=$(echo "$PACK" | grep -oE 'https://[^/]+')
-          resp=$(curl -sL -c $J -b $J -A "$UA" -H "X-Requested-With: XMLHttpRequest" -X POST -d "csrf_token=$csrf2" "$PACK/file/$uid?$(python3 -c 'import sys,urllib.parse; print(urllib.parse.urlencode({"source":"game_download","key":sys.argv[1]}))' "$key")")
-          echo "réponse : ${resp:0:200}"
+          raw=$(python3 -c 'import sys,urllib.parse; print(urllib.parse.unquote(sys.argv[1].split("/download/")[1].split("?")[0]))' "$dl")
+          enc=$(python3 -c 'import sys,urllib.parse; print(urllib.parse.quote(sys.argv[1], safe=""))' "$raw")
+          for q in "source=game_download&key=$enc" "source=game_download&key=$enc&after_download_lightbox=true" "source=view_game&as_props=1&after_download_lightbox=true"; do
+            resp=$(curl -s -c $J -b $J -A "$UA" -e "$dl" -H "X-Requested-With: XMLHttpRequest" -X POST -d "csrf_token=$csrf2" "$PACK/file/$uid?$q")
+            echo "essai [$q] → ${resp:0:160}"
+            echo "$resp" | grep -q '"url"' && break
+          done
           file=$(echo "$resp" | python3 -c 'import sys,json; print(json.load(sys.stdin).get("url",""))')
           [ -n "$file" ] || exit 1
           curl -sL -A "$UA" -o pack.zip "$file"
