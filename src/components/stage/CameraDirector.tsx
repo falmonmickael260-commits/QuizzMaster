@@ -212,7 +212,7 @@ function starShot(f: StarFocus, aspect: number): Shot {
   const pos = head.clone().addScaledVector(dir, dist).add(V(0, portrait ? 1.3 : 0.9, 0));
   // tête dans la partie haute, au-dessus de l'habillage du bas
   const target = head.clone().add(V(0, portrait ? -1.45 : -0.95, 0));
-  return { pos, target, fov: portrait ? 44 : 32, speed: 3 };
+  return { pos, target, fov: portrait ? 44 : 38, speed: 3 };
 }
 
 /**
