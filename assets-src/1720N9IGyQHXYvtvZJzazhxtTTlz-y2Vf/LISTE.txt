@@ -91,3 +91,4 @@
 ./Separate Skeletal Meshes and Animations/Witch/Witch_Head.fbx
 ./Separate Skeletal Meshes and Animations/Witch/Witch_Legs.fbx
 ./Separate Skeletal Meshes and Animations/Worker/Worker_Body.fbx
+./Separate Skeletal Meshes and Animations/Worker/Worker_Feet.fbx
