@@ -171,9 +171,8 @@ async function main() {
   await B.goto(`${BASE}/?room=${code}&quality=low&fps=${process.env.FPS || 6}`, { waitUntil: "networkidle", timeout: 180_000 });
   await B.fill("#pseudo", "Sarah", { timeout: 180_000 });
   await B.locator(".menu-face").nth(6).click({ force: true });
-  // personnalisation : un casque sur le personnage (code personnalisé validé par le serveur)
-  await B.click('button[aria-label="Accessoire"]', { force: true });
-  await B.click('.menu-chips button:has-text("Casque")', { force: true });
+  // personnalisation : couleur de tenue (code de personnage validé par le serveur)
+  await B.click('.menu-swatches button[aria-label="Couleur 3"]', { force: true });
   await B.click(".menu-cta.teal", { force: true });
   const botPlans: Record<string, (qi: number) => Plan> = {
     Lucas: () => ({ mode: "2", correct: Math.random() < 0.5 }),
@@ -183,7 +182,7 @@ async function main() {
   const full = await waitFor(A, (s) => s.players.length === 4, "4 candidats");
   check(full.players.map((p) => p.seat).sort().join() === "0,1,2,3", "chaque candidat a son propre pupitre (sièges 0-3)");
   const seatsAtStart = Object.fromEntries(full.players.map((p) => [p.id, p.seat]));
-  check(full.players.find((p) => p.name === "Sarah")?.character.startsWith("c-") ?? false, "personnage personnalisé accepté par le serveur (code c-…)");
+  check(full.players.find((p) => p.name === "Sarah")?.character === "q-6-3", "personnage et couleur de tenue acceptés par le serveur (code q-6-3)");
   const idA = (await getMyId(A))!;
   const idB = (await getMyId(B))!;
   await sleep(2500);

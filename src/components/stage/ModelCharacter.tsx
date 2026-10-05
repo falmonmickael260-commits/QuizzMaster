@@ -7,11 +7,29 @@ import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { SkeletonUtils } from "three-stdlib";
+import { toCreasedNormals } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { CHARACTER_MODELS, OUTFIT_COLORS, modelOf } from "@shared/characters";
 import type { Mood } from "./Character";
 
-/** Hauteur des personnages sur le plateau (même gabarit que les anciens personnages). */
-const HEIGHT = 2.5;
+/** Hauteur des personnages sur le plateau (un peu plus grands que nature pour être bien visibles). */
+const HEIGHT = 2.75;
+
+// Les modèles sont « low-poly » (facettes plates) : on recalcule des normales lissées une fois par géométrie
+// pour un rendu plus doux (les couleurs sont unies, sans texture, rien n'est perdu).
+const smoothed = new WeakMap<THREE.BufferGeometry, THREE.BufferGeometry>();
+function smoothGeometry(g: THREE.BufferGeometry): THREE.BufferGeometry {
+  const done = smoothed.get(g);
+  if (done) return done;
+  let out = g;
+  try {
+    // lissage des facettes mais arêtes vives conservées au-delà de 50° (yeux, cols, chaussures…)
+    out = toCreasedNormals(g, THREE.MathUtils.degToRad(50));
+  } catch {
+    out = g;
+  }
+  smoothed.set(g, out);
+  return out;
+}
 
 export function modelUrl(character: string): string {
   return `/models/${CHARACTER_MODELS[modelOf(character).model].file}.glb`;
@@ -64,6 +82,7 @@ export function ModelCharacter({ character, mood, seed = 0 }: { character: strin
       const m = c as THREE.Mesh;
       if (!m.isMesh) return;
       m.frustumCulled = false;
+      m.geometry = smoothGeometry(m.geometry);
       const mats = Array.isArray(m.material) ? m.material : [m.material];
       for (const mat of mats) if (!SKIP_TINT.test(mat.name)) weight.set(mat.name, (weight.get(mat.name) ?? 0) + (m.geometry.index?.count ?? 0));
     });
@@ -77,7 +96,8 @@ export function ModelCharacter({ character, mood, seed = 0 }: { character: strin
           std.color.copy(tint);
           if (std.map) std.map = null;
         }
-        std.roughness = Math.min(std.roughness ?? 1, 0.75);
+        std.roughness = Math.min(std.roughness ?? 1, 0.7);
+        std.flatShading = false;
         return std;
       };
       m.material = Array.isArray(m.material) ? m.material.map(remap) : remap(m.material);
