@@ -25,20 +25,31 @@ jobs:
           dl=$(curl -sL -c $J -b $J -A "$UA" -X POST -d "csrf_token=$csrf" "$PACK/download_url" | python3 -c 'import sys,json; print(json.load(sys.stdin).get("url",""))')
           echo "page de téléchargement : $dl"
           [ -n "$dl" ] || exit 1
-          html=$(curl -sL -c $J -b $J -A "$UA" "$dl")
-          csrf2=$(echo "$html" | grep -oE 'name="csrf_token" value="[^"]+"' | head -1 | sed 's/.*value="//;s/"$//')
-          echo "$html" | python3 - "$MATCH" > uploads.txt <<'PY'
+          curl -sL -c $J -b $J -A "$UA" "$dl" -o dl.html
+          csrf2=$(grep -oE 'name="csrf_token" value="[^"]+"' dl.html | head -1 | sed 's/.*value="//;s/"$//')
+          python3 - "$MATCH" > uploads.txt <<'PY'
           import sys,re
-          html=sys.stdin.read(); m=sys.argv[1].lower()
-          for uid,name in re.findall(r'data-upload_id="(\d+)".*?class="name" title="([^"]+)"', html, re.S):
-              print(uid, name, "*" if m in name.lower() else "")
+          html=open("dl.html",encoding="utf8").read(); m=sys.argv[1].lower()
+          ids=re.findall(r'data-upload_id="(\d+)"', html)
+          seen=[]
+          for uid in ids:
+              if uid in seen: continue
+              seen.append(uid)
+              i=html.find(f'data-upload_id="{uid}"')
+              chunk=html[max(0,i-1500):i+1500]
+              names=re.findall(r'class="name"[^>]*title="([^"]+)"', chunk) or re.findall(r'<strong[^>]*class="name"[^>]*>([^<]+)<', chunk)
+              name=names[0] if names else "?"
+              print(uid, name.replace(" ","_"), "*" if m in name.lower() else "")
           PY
-          cat uploads.txt
+          echo "── fichiers proposés :"; cat uploads.txt
+          [ -s uploads.txt ] || { grep -o 'upload[^ ]\{0,80\}' dl.html | head -20; exit 1; }
           uid=$(grep '\*$' uploads.txt | head -1 | cut -d' ' -f1)
           [ -n "$uid" ] || uid=$(head -1 uploads.txt | cut -d' ' -f1)
-          key=$(echo "$dl" | grep -oE 'download/[^/?]+' | cut -d/ -f2)
+          key=$(echo "$dl" | sed -E 's#.*/download/([^?]+).*#\1#')
           base=$(echo "$PACK" | grep -oE 'https://[^/]+')
-          file=$(curl -sL -c $J -b $J -A "$UA" -X POST -d "csrf_token=$csrf2" "$base/file/$uid?source=game_download&key=$key" | python3 -c 'import sys,json; print(json.load(sys.stdin).get("url",""))')
+          resp=$(curl -sL -c $J -b $J -A "$UA" -H "X-Requested-With: XMLHttpRequest" -X POST -d "csrf_token=$csrf2" "$base/file/$uid?source=game_download&key=$key")
+          echo "réponse : ${resp:0:200}"
+          file=$(echo "$resp" | python3 -c 'import sys,json; print(json.load(sys.stdin).get("url",""))')
           [ -n "$file" ] || exit 1
           curl -sL -A "$UA" -o pack.zip "$file"
           ls -la pack.zip
