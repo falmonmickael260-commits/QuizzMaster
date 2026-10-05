@@ -40,8 +40,21 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add assets-src/apercus && git commit -m "Aperçus de packs de personnages" && git push || true
+      - name: Téléchargement Google Drive (pack = gdrive:<dossier>)
+        if: startsWith(inputs.pack, 'gdrive:')
+        env: { PACK: "${{ inputs.pack }}" }
+        run: |
+          set -e
+          pip install -q gdown
+          id="${PACK#gdrive:}"
+          mkdir -p /tmp/pack && cd /tmp/pack
+          gdown --folder "https://drive.google.com/drive/folders/$id" -O /tmp/pack --remaining-ok || true
+          find /tmp/pack -maxdepth 3 | head -60
+          for z in $(find /tmp/pack -iname '*.zip'); do unzip -q -o "$z" -d "${z%.zip}"; done
+          echo "── modèles :"
+          (cd /tmp/pack && find . \( -iname '*.gltf' -o -iname '*.glb' \) | sort | head -200)
       - name: Téléchargement gratuit itch.io
-        if: inputs.match != 'LIST'
+        if: inputs.match != 'LIST' && !startsWith(inputs.pack, 'gdrive:')
         env: { PACK: "${{ inputs.pack }}", MATCH: "${{ inputs.match }}" }
         run: |
           set -e
@@ -79,7 +92,7 @@ jobs:
         env: { PACK: "${{ inputs.pack }}", ONLY: "${{ inputs.only }}" }
         run: |
           set -e
-          slug=$(basename "$PACK")
+          slug=$(basename "$PACK" | sed 's/^gdrive://')
           out="assets-src/$slug"; mkdir -p "$out"
           (cd /tmp/pack && find . \( -iname '*.gltf' -o -iname '*.glb' \) | sort) > /tmp/models.txt
           if [ -n "$ONLY" ]; then grep -E "$ONLY" /tmp/models.txt > /tmp/m2.txt || true; mv /tmp/m2.txt /tmp/models.txt; fi
@@ -117,5 +130,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add assets-src
-          git commit -m "Modèles 3D CC0 Quaternius : $(basename "${{ inputs.pack }}") (GLB optimisés)" || exit 0
+          git commit -m "Modèles 3D CC0 Quaternius : ${{ inputs.only || 'pack' }} (GLB optimisés)" || exit 0
           git push
