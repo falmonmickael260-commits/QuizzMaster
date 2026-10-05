@@ -8,8 +8,10 @@ import { serverNow } from "@/lib/net";
 // Peu d'envois de textures vers le GPU par frame : les écrans qui changent en même temps
 // sont étalés sur les frames suivantes au lieu de provoquer un à-coup. Un écran qui attend depuis
 // trop longtemps passe quand même (aucun écran ne reste figé, même sur un appareil lent).
-const UPLOADS_PER_FRAME = 2;
-const MAX_WAIT_MS = 220;
+const UPLOADS_PER_FRAME = 1;
+const MAX_WAIT_MS = 400;
+/** Même les écrans en retard ne passent pas à plus de 2 par image (pas d'à-coup). */
+const HARD_CAP = 2;
 let uploadFrame = -1;
 let uploadsThisFrame = 0;
 
@@ -58,7 +60,7 @@ export function useCanvasTexture(
       uploadsThisFrame = 0;
     }
     const overdue = t - waitingSince.current > MAX_WAIT_MS;
-    if (last.current !== "" && uploadsThisFrame >= UPLOADS_PER_FRAME && !overdue) return;
+    if (last.current !== "" && (uploadsThisFrame >= HARD_CAP || (uploadsThisFrame >= UPLOADS_PER_FRAME && !overdue))) return;
     uploadsThisFrame++;
     waitingSince.current = 0;
     last.current = s;

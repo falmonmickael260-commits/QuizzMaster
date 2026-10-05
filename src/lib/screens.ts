@@ -500,7 +500,7 @@ function drawFinal(ctx: Ctx, w: number, h: number, s: PublicRoomState, t: number
 
 export function podiumFrontSig(p: PublicPlayer | null, s: PublicRoomState | null, now: number, color: string) {
   if (!p || !s) return `empty|${fontsVersion}`;
-  const tick = isTweening(`pod-${p.id}`, now) ? Math.floor(now / 100) : s.phase === "wheel" && s.wheel?.stage === "choose_target" ? Math.floor(now / 250) : 0;
+  const tick = isTweening(`pod-${p.id}`, now) ? Math.floor(now / 200) : s.phase === "wheel" && s.wheel?.stage === "choose_target" ? Math.floor(now / 250) : 0;
   const locked = s.phase === "reveal" && now - s.phaseStartedAt < REVEAL_LOCK_MS;
   return [p.name, p.score, p.mode, p.answered, p.connected, s.phase, locked, s.reveal?.questionIndex, p.lastResult?.questionIndex, p.modifiers.shield, p.modifiers.pointsMultiplier, tick, color, fontsVersion, s.wheel?.stage, s.wheel?.targetId].join("|");
 }
@@ -587,8 +587,8 @@ export function drawPodiumFront(ctx: Ctx, w: number, h: number, p: PublicPlayer 
 
 export function podiumTopSig(p: PublicPlayer | null, s: PublicRoomState | null, priv: PrivateState | null, now: number) {
   if (!p || !s) return `e|${fontsVersion}`;
-  // écran du joueur local : fluide ; écrans des adversaires : 4 images/s suffisent
-  const tick = s.phase === "question" ? Math.floor(now / (priv ? 250 : 500)) : 0;
+  // écran du joueur local : chrono animé ; écrans des adversaires : redessinés seulement quand leur état change
+  const tick = s.phase === "question" && priv ? Math.floor(now / 250) : 0;
   return [s.phase, p.mode, p.answered, priv?.options.join(","), priv?.answer, s.reveal?.questionIndex, p.score, tick, fontsVersion].join("|");
 }
 
