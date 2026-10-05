@@ -13,6 +13,7 @@ import { CandidateSeat } from "./Podium";
 import { BigScreen, Confetti, Wheel } from "./SetPieces";
 import { Marquee } from "./Marquee";
 import { StageLights } from "./StageLights";
+import { preloadCharacters } from "./ModelCharacter";
 import { TV_STAGE_CENTER, TvSet } from "./TvSet";
 import { DEBUG_FX } from "./Studio";
 
@@ -72,6 +73,11 @@ export default function Stage({ state, live = false, priv, myId, quality, onQual
   const [dpr, setDpr] = useState(() => (quality === "high" ? MAX_DPR : Math.min(MAX_DPR, LOW_DPR)));
   useEffect(() => setDpr(quality === "high" ? MAX_DPR : Math.min(MAX_DPR, LOW_DPR)), [quality]);
   const me = state?.players.find((p) => p.id === myId) ?? null;
+  // personnages 3D chargés dès qu'un candidat arrive (pas d'à-coup pendant la partie)
+  const charactersKey = state?.players.map((p) => p.character).join(",") ?? "";
+  useEffect(() => {
+    if (charactersKey) preloadCharacters(charactersKey.split(","));
+  }, [charactersKey]);
   const now = serverNow();
   const choosing = state?.phase === "wheel" && state.wheel?.stage === "choose_target" && state.wheel.spinnerId === myId;
   const finalT = state?.phase === "final" ? now - state.phaseStartedAt : 0;
@@ -137,7 +143,7 @@ export default function Stage({ state, live = false, priv, myId, quality, onQual
         <CameraDirector state={state} mySeat={me?.seat ?? null} fixed={live} />
         {/* tampons 8 bits : une valeur invalide isolée (NaN) ne peut plus se propager à tout l'écran via le flou du bloom */}
         {quality === "high" && !DEBUG_FX.includes("nobloom") && (
-          <EffectComposer multisampling={4} frameBufferType={THREE.UnsignedByteType}>
+          <EffectComposer multisampling={2} frameBufferType={THREE.UnsignedByteType}>
             {/* seuil au-dessus de la luminosité des écrans : le halo reste sur les néons, pas sur les textes */}
             <Bloom mipmapBlur intensity={1} luminanceThreshold={0.78} luminanceSmoothing={0.12} radius={0.7} />
             <Vignette eskil={false} offset={0.25} darkness={0.7} />
