@@ -22,7 +22,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
+      - name: Catalogue (match = LIST)
+        if: inputs.match == 'LIST'
+        env: { PACK: "${{ inputs.pack }}" }
+        run: |
+          curl -sL -A "Mozilla/5.0" "$PACK" | grep -oE 'href="https://[a-z0-9-]+\.itch\.io/[^"/]+"' | sort -u
+          curl -sL -A "Mozilla/5.0" "$PACK" | grep -oE 'class="title game_link"[^>]*>[^<]+' | sed 's/.*>//' | head -100
       - name: Téléchargement gratuit itch.io
+        if: inputs.match != 'LIST'
         env: { PACK: "${{ inputs.pack }}", MATCH: "${{ inputs.match }}" }
         run: |
           set -e
@@ -56,6 +63,7 @@ jobs:
           echo "── modèles :"
           (cd /tmp/pack && find . \( -iname '*.gltf' -o -iname '*.glb' \) | sort)
       - name: Conversion GLB optimisée
+        if: inputs.match != 'LIST'
         env: { PACK: "${{ inputs.pack }}", ONLY: "${{ inputs.only }}" }
         run: |
           set -e
@@ -92,6 +100,7 @@ jobs:
           done < /tmp/models.txt
           du -sh "$out"; ls -la "$out" | head -80
       - name: Ajout à la branche
+        if: inputs.match != 'LIST'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
