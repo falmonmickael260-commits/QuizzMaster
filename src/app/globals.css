@@ -2150,6 +2150,21 @@ button.tv-badge {
   border-color: #fff;
   box-shadow: 0 0 0 3px #29e7ff;
 }
+/* « tenue d'origine » */
+.menu-swatch.origin {
+  background: conic-gradient(#ff4d6d, #ffd23f, #2ee59d, #1fb6ff, #9b5de5, #ff4d6d);
+  position: relative;
+}
+.menu-swatch.origin::after {
+  content: "↺";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 900;
+  text-shadow: 0 1px 3px #000;
+}
 .menu-chips {
   display: flex;
   flex-wrap: wrap;
@@ -2798,4 +2813,30 @@ button.tv-badge {
   .star-rays {
     animation: none;
   }
+}
+
+/* Portrait de candidat (miniature du personnage 3D) */
+.avatar {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, #24357e, #070b24);
+  overflow: visible;
+}
+.avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.avatar i {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 32%;
+  height: 32%;
+  border-radius: 50%;
+  border: 2px solid #0b1030;
 }
