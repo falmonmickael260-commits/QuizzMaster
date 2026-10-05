@@ -120,7 +120,7 @@ jobs:
           echo "── tree" > "$out/LISTE.txt"; (cd /tmp/pack && find . -type f | sort) >> "$out/LISTE.txt"
           while read -r f; do
             name=$(echo "$f" | sed 's#^\./##; s#[^A-Za-z0-9._-]#_#g; s#\.gltf$##i; s#\.glb$##i')
-            npx -y @gltf-transform/cli@4 optimize "/tmp/pack/$f" "$out/$name.glb" --compress meshopt --texture-compress webp --texture-size 1024 --simplify false > /tmp/log.txt 2>&1 \
+            npx -y @gltf-transform/cli@4 optimize "/tmp/pack/$f" "$out/$name.glb" --compress meshopt --texture-compress webp --texture-size 1024 --simplify false --palette false --join false > /tmp/log.txt 2>&1 \
               || { echo "optimize a échoué pour $f :"; tail -15 /tmp/log.txt; npx -y @gltf-transform/cli@4 copy "/tmp/pack/$f" "$out/$name.glb" 2>&1 | tail -5 || echo "échec : $f"; }
           done < /tmp/models.txt
           du -sh "$out"; ls -la "$out" | head -80
