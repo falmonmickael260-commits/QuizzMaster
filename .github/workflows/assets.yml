@@ -45,9 +45,11 @@ jobs:
           [ -s uploads.txt ] || { grep -o 'upload[^ ]\{0,80\}' dl.html | head -20; exit 1; }
           uid=$(grep '\*$' uploads.txt | head -1 | cut -d' ' -f1)
           [ -n "$uid" ] || uid=$(head -1 uploads.txt | cut -d' ' -f1)
-          key=$(echo "$dl" | sed -E 's#.*/download/([^?]+).*#\1#')
+          key=$(grep -oE '"key":"[^"]+"' dl.html | head -1 | sed 's/"key":"//;s/"$//')
+          [ -n "$key" ] || key=$(python3 -c 'import sys,urllib.parse; print(urllib.parse.unquote(sys.argv[1].split("/download/")[1].split("?")[0]))' "$dl")
+          echo "clé : ${key:0:8}…"; grep -oE '"(key|upload_id|game_id)":[^,}]{0,60}' dl.html | head -5
           base=$(echo "$PACK" | grep -oE 'https://[^/]+')
-          resp=$(curl -sL -c $J -b $J -A "$UA" -H "X-Requested-With: XMLHttpRequest" -X POST -d "csrf_token=$csrf2" "$PACK/file/$uid?source=game_download&key=$key")
+          resp=$(curl -sL -c $J -b $J -A "$UA" -H "X-Requested-With: XMLHttpRequest" -X POST -d "csrf_token=$csrf2" "$PACK/file/$uid?$(python3 -c 'import sys,urllib.parse; print(urllib.parse.urlencode({"source":"game_download","key":sys.argv[1]}))' "$key")")
           echo "réponse : ${resp:0:200}"
           file=$(echo "$resp" | python3 -c 'import sys,json; print(json.load(sys.stdin).get("url",""))')
           [ -n "$file" ] || exit 1
