@@ -48,7 +48,7 @@ jobs:
           pip install -q gdown
           id="${PACK#gdrive:}"
           mkdir -p /tmp/pack && cd /tmp/pack
-          gdown --folder "https://drive.google.com/drive/folders/$id" -O /tmp/pack --remaining-ok || true
+          gdown --folder "https://drive.google.com/drive/folders/$id" -O /tmp/pack || true
           find /tmp/pack -maxdepth 3 | head -60
           for z in $(find /tmp/pack -iname '*.zip'); do unzip -q -o "$z" -d "${z%.zip}"; done
           echo "── modèles :"
