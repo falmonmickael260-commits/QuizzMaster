@@ -1,0 +1,95 @@
+── tree
+./All together/Blends/Humans_Master.blend
+./All together/FBX/Humans_Master.fbx
+./Humanoid Rig/All Together/Humans_Master.blend
+./Humanoid Rig/Individual Characters/Blend/Adventurer.blend
+./Humanoid Rig/Individual Characters/Blend/Beach.blend
+./Humanoid Rig/Individual Characters/Blend/Casual.blend
+./Humanoid Rig/Individual Characters/Blend/Casual2.blend
+./Humanoid Rig/Individual Characters/Blend/Farmer.blend
+./Humanoid Rig/Individual Characters/Blend/King.blend
+./Humanoid Rig/Individual Characters/Blend/Punk.blend
+./Humanoid Rig/Individual Characters/Blend/Spacesuit.blend
+./Humanoid Rig/Individual Characters/Blend/Suit.blend
+./Humanoid Rig/Individual Characters/Blend/Swat.blend
+./Humanoid Rig/Individual Characters/Blend/Worker.blend
+./Humanoid Rig/Individual Characters/FBX/Adventurer.fbx
+./Humanoid Rig/Individual Characters/FBX/Beach.fbx
+./Humanoid Rig/Individual Characters/FBX/Casual.fbx
+./Humanoid Rig/Individual Characters/FBX/Casual2.fbx
+./Humanoid Rig/Individual Characters/FBX/Farmer.fbx
+./Humanoid Rig/Individual Characters/FBX/King.fbx
+./Humanoid Rig/Individual Characters/FBX/Punk.fbx
+./Humanoid Rig/Individual Characters/FBX/Spacesuit.fbx
+./Humanoid Rig/Individual Characters/FBX/Suit.fbx
+./Humanoid Rig/Individual Characters/FBX/Swat.fbx
+./Humanoid Rig/Individual Characters/FBX/Worker.fbx
+./Individual Characters/Blends/Adventurer.blend
+./Individual Characters/Blends/Beach.blend
+./Individual Characters/Blends/Casual_2.blend
+./Individual Characters/Blends/Casual_Hoodie.blend
+./Individual Characters/Blends/Farmer.blend
+./Individual Characters/Blends/King.blend
+./Individual Characters/Blends/Punk.blend
+./Individual Characters/Blends/Spacesuit.blend
+./Individual Characters/Blends/Suit.blend
+./Individual Characters/Blends/Swat.blend
+./Individual Characters/Blends/Worker.blend
+./Individual Characters/FBX/Adventurer.fbx
+./Individual Characters/FBX/Beach.fbx
+./Individual Characters/FBX/Casual_2.fbx
+./Individual Characters/FBX/Casual_Hoodie.fbx
+./Individual Characters/FBX/Farmer.fbx
+./Individual Characters/FBX/King.fbx
+./Individual Characters/FBX/Punk.fbx
+./Individual Characters/FBX/Spacesuit.fbx
+./Individual Characters/FBX/Suit.fbx
+./Individual Characters/FBX/Swat.fbx
+./Individual Characters/FBX/Worker.fbx
+./Individual Characters/glTF/Adventurer.gltf
+./Individual Characters/glTF/Beach.gltf
+./Individual Characters/glTF/Casual_2.gltf
+./Individual Characters/glTF/Casual_Hoodie.gltf
+./Individual Characters/glTF/Farmer.gltf
+./Individual Characters/glTF/King.gltf
+./Individual Characters/glTF/Punk.gltf
+./Individual Characters/glTF/Spacesuit.gltf
+./Individual Characters/glTF/Suit.gltf
+./Individual Characters/glTF/Swat.gltf
+./Individual Characters/glTF/Worker.gltf
+./Separate Skeletal Meshes and Animations/Adventurer/Adventurer_Backpack.fbx
+./Separate Skeletal Meshes and Animations/Adventurer/Adventurer_Body.fbx
+./Separate Skeletal Meshes and Animations/Adventurer/Adventurer_Feet.fbx
+./Separate Skeletal Meshes and Animations/Adventurer/Adventurer_Head.fbx
+./Separate Skeletal Meshes and Animations/Adventurer/Adventurer_Legs.fbx
+./Separate Skeletal Meshes and Animations/Beach/Beach_Body.fbx
+./Separate Skeletal Meshes and Animations/Beach/Beach_Feet.fbx
+./Separate Skeletal Meshes and Animations/Beach/Beach_Head.fbx
+./Separate Skeletal Meshes and Animations/Beach/Beach_Legs.fbx
+./Separate Skeletal Meshes and Animations/Casual_2/Casual2_Body.fbx
+./Separate Skeletal Meshes and Animations/Casual_2/Casual2_Feet.fbx
+./Separate Skeletal Meshes and Animations/Casual_2/Casual2_Head.fbx
+./Separate Skeletal Meshes and Animations/Casual_2/Casual2_Legs.fbx
+./Separate Skeletal Meshes and Animations/Casual_Hoodie/Casual_Body.fbx
+./Separate Skeletal Meshes and Animations/Casual_Hoodie/Casual_Feet.fbx
+./Separate Skeletal Meshes and Animations/Casual_Hoodie/Casual_Head.fbx
+./Separate Skeletal Meshes and Animations/Casual_Hoodie/Casual_Legs.fbx
+./Separate Skeletal Meshes and Animations/Farmer/Farmer_Body.fbx
+./Separate Skeletal Meshes and Animations/Farmer/Farmer_Feet.fbx
+./Separate Skeletal Meshes and Animations/Farmer/Farmer_Head.fbx
+./Separate Skeletal Meshes and Animations/Farmer/Farmer_Legs.fbx
+./Separate Skeletal Meshes and Animations/Horse/Horse_Head.fbx
+./Separate Skeletal Meshes and Animations/King/King_Body.fbx
+./Separate Skeletal Meshes and Animations/King/King_Feet.fbx
+./Separate Skeletal Meshes and Animations/King/King_Head.fbx
+./Separate Skeletal Meshes and Animations/King/King_Legs.fbx
+./Separate Skeletal Meshes and Animations/Punk/Punk_Body.fbx
+./Separate Skeletal Meshes and Animations/Punk/Punk_Feet.fbx
+./Separate Skeletal Meshes and Animations/Punk/Punk_Head.fbx
+./Separate Skeletal Meshes and Animations/Punk/Punk_Legs.fbx
+./Separate Skeletal Meshes and Animations/SpaceSuit/SpaceSuit_Body.fbx
+./Separate Skeletal Meshes and Animations/SpaceSuit/SpaceSuit_Feet.fbx
+./Separate Skeletal Meshes and Animations/SpaceSuit/SpaceSuit_Head.fbx
+./Separate Skeletal Meshes and Animations/SpaceSuit/SpaceSuit_Legs.fbx
+./Separate Skeletal Meshes and Animations/Suit/Suit_Body.fbx
+./Separate Skeletal Meshes and Animations/Suit/Suit_Feet.fbx
