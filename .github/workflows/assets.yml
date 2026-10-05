@@ -1,6 +1,6 @@
 name: Assets
-# Récupère les modèles 3D libres de droits (CC0) de Quaternius depuis sa page itch.io officielle
-# (téléchargement gratuit « No thanks, just take me to the downloads »), puis les publie en artefact.
+# Récupère un pack de modèles 3D libres de droits (CC0) de Quaternius depuis sa page itch.io officielle
+# (téléchargement gratuit), convertit chaque glTF en GLB optimisé et les ajoute à la branche dans assets-src/.
 on:
   workflow_dispatch:
     inputs:
@@ -10,65 +10,70 @@ on:
       match:
         description: "Motif du fichier à prendre (ex. Standard)"
         default: Standard
+      only:
+        description: "Motif des chemins glTF à convertir (regex, vide = tous)"
+        default: ""
+permissions:
+  contents: write
 jobs:
   assets:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
       - name: Téléchargement gratuit itch.io
         env: { PACK: "${{ inputs.pack }}", MATCH: "${{ inputs.match }}" }
         run: |
           set -e
-          J=cookies.txt; UA="Mozilla/5.0 (X11; Linux x86_64)"
+          J=/tmp/cookies.txt; UA="Mozilla/5.0 (X11; Linux x86_64)"
           page=$(curl -sL -c $J -b $J -A "$UA" "$PACK")
           csrf=$(echo "$page" | grep -oE 'name="csrf_token" value="[^"]+"' | head -1 | sed 's/.*value="//;s/"$//')
-          echo "csrf: ${csrf:0:6}…"
           dl=$(curl -sL -c $J -b $J -A "$UA" -X POST -d "csrf_token=$csrf" "$PACK/download_url" | python3 -c 'import sys,json; print(json.load(sys.stdin).get("url",""))')
-          echo "page de téléchargement : $dl"
           [ -n "$dl" ] || exit 1
-          curl -sL -c $J -b $J -A "$UA" "$dl" -o dl.html
-          csrf2=$(grep -oE 'name="csrf_token" value="[^"]+"' dl.html | head -1 | sed 's/.*value="//;s/"$//')
-          python3 - "$MATCH" > uploads.txt <<'PY'
+          curl -sL -c $J -b $J -A "$UA" "$dl" -o /tmp/dl.html
+          csrf2=$(grep -oE 'name="csrf_token" value="[^"]+"' /tmp/dl.html | head -1 | sed 's/.*value="//;s/"$//')
+          python3 - "$MATCH" > /tmp/uploads.txt <<'PY'
           import sys,re
-          html=open("dl.html",encoding="utf8").read(); m=sys.argv[1].lower()
-          ids=re.findall(r'data-upload_id="(\d+)"', html)
-          seen=[]
-          for uid in ids:
+          html=open("/tmp/dl.html",encoding="utf8").read(); m=sys.argv[1].lower(); seen=[]
+          for uid in re.findall(r'data-upload_id="(\d+)"', html):
               if uid in seen: continue
-              seen.append(uid)
-              i=html.find(f'data-upload_id="{uid}"')
-              chunk=html[max(0,i-1500):i+1500]
-              names=re.findall(r'class="name"[^>]*title="([^"]+)"', chunk) or re.findall(r'<strong[^>]*class="name"[^>]*>([^<]+)<', chunk)
-              name=names[0] if names else "?"
+              seen.append(uid); i=html.find(f'data-upload_id="{uid}"'); chunk=html[max(0,i-1500):i+1500]
+              names=re.findall(r'class="name"[^>]*title="([^"]+)"', chunk); name=names[0] if names else "?"
               print(uid, name.replace(" ","_"), "*" if m in name.lower() else "")
           PY
-          echo "── fichiers proposés :"; cat uploads.txt
-          [ -s uploads.txt ] || { grep -o 'upload[^ ]\{0,80\}' dl.html | head -20; exit 1; }
-          uid=$(grep '\*$' uploads.txt | head -1 | cut -d' ' -f1)
-          [ -n "$uid" ] || uid=$(head -1 uploads.txt | cut -d' ' -f1)
-          key=$(grep -oE '"key":"[^"]+"' dl.html | head -1 | sed 's/"key":"//;s/"$//')
-          [ -n "$key" ] || key=$(python3 -c 'import sys,urllib.parse; print(urllib.parse.unquote(sys.argv[1].split("/download/")[1].split("?")[0]))' "$dl")
-          echo "clé : ${key:0:8}…"; grep -oE '"(key|upload_id|game_id)":[^,}]{0,60}' dl.html | head -5
-          base=$(echo "$PACK" | grep -oE 'https://[^/]+')
-          raw=$(python3 -c 'import sys,urllib.parse; print(urllib.parse.unquote(sys.argv[1].split("/download/")[1].split("?")[0]))' "$dl")
-          enc=$(python3 -c 'import sys,urllib.parse; print(urllib.parse.quote(sys.argv[1], safe=""))' "$raw")
-          for q in "source=game_download&key=$enc" "source=game_download&key=$enc&after_download_lightbox=true" "source=view_game&as_props=1&after_download_lightbox=true"; do
-            resp=$(curl -s -c $J -b $J -A "$UA" -e "$dl" -H "X-Requested-With: XMLHttpRequest" -X POST -d "csrf_token=$csrf2" "$PACK/file/$uid?$q")
-            echo "essai [$q] → ${resp:0:160}"
-            echo "$resp" | grep -q '"url"' && break
-          done
+          echo "── fichiers proposés :"; cat /tmp/uploads.txt
+          uid=$(grep '\*$' /tmp/uploads.txt | head -1 | cut -d' ' -f1)
+          [ -n "$uid" ] || uid=$(head -1 /tmp/uploads.txt | cut -d' ' -f1)
+          resp=$(curl -s -c $J -b $J -A "$UA" -e "$dl" -H "X-Requested-With: XMLHttpRequest" -X POST -d "csrf_token=$csrf2" "$PACK/file/$uid?source=view_game&as_props=1&after_download_lightbox=true")
           file=$(echo "$resp" | python3 -c 'import sys,json; print(json.load(sys.stdin).get("url",""))')
-          [ -n "$file" ] || exit 1
-          curl -sL -A "$UA" -o pack.zip "$file"
-          ls -la pack.zip
-          mkdir -p pack && unzip -q pack.zip -d pack
-          echo "── contenu (glTF/GLB) :"
-          find pack -iname '*.gltf' -o -iname '*.glb' | head -60
-          find pack -iname '*.gltf' -o -iname '*.glb' -o -iname '*.bin' -o -iname '*.png' | grep -iE 'gltf|glb' | head -200 > list.txt || true
-          mkdir -p out && find pack \( -iname '*.glb' -o -iname '*.gltf' -o -iname '*.bin' \) -exec cp --parents {} out/ \;
-          find pack -ipath '*gltf*' -iname '*.png' -exec cp --parents {} out/ \; || true
-          du -sh out
-      - uses: actions/upload-artifact@v4
-        with:
-          name: quaternius-gltf
-          path: out
-          retention-days: 7
+          [ -n "$file" ] || { echo "$resp" | head -c 300; exit 1; }
+          curl -sL -A "$UA" -o /tmp/pack.zip "$file"
+          ls -la /tmp/pack.zip
+          mkdir -p /tmp/pack && unzip -q /tmp/pack.zip -d /tmp/pack
+          echo "── arborescence :"
+          (cd /tmp/pack && find . -type d | sort | head -120)
+          echo "── modèles :"
+          (cd /tmp/pack && find . \( -iname '*.gltf' -o -iname '*.glb' \) | sort)
+      - name: Conversion GLB optimisée
+        env: { PACK: "${{ inputs.pack }}", ONLY: "${{ inputs.only }}" }
+        run: |
+          set -e
+          slug=$(basename "$PACK")
+          out="assets-src/$slug"; mkdir -p "$out"
+          (cd /tmp/pack && find . \( -iname '*.gltf' -o -iname '*.glb' \) | sort) > /tmp/models.txt
+          [ -z "$ONLY" ] || grep -E "$ONLY" /tmp/models.txt > /tmp/m2.txt && mv /tmp/m2.txt /tmp/models.txt || true
+          echo "── tree" > "$out/LISTE.txt"; (cd /tmp/pack && find . -type f | sort) >> "$out/LISTE.txt"
+          while read -r f; do
+            name=$(echo "$f" | sed 's#^\./##; s#[^A-Za-z0-9._-]#_#g; s#\.gltf$##i; s#\.glb$##i')
+            npx -y @gltf-transform/cli@4 optimize "/tmp/pack/$f" "$out/$name.glb" --compress meshopt --texture-compress webp --texture-size 1024 --simplify false > /dev/null 2>&1 \
+              || npx -y @gltf-transform/cli@4 copy "/tmp/pack/$f" "$out/$name.glb" > /dev/null 2>&1 || echo "échec : $f"
+          done < /tmp/models.txt
+          du -sh "$out"; ls -la "$out" | head -80
+      - name: Ajout à la branche
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets-src
+          git commit -m "Modèles 3D CC0 Quaternius : $(basename "${{ inputs.pack }}") (GLB optimisés)" || exit 0
+          git push
