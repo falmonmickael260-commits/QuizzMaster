@@ -1,6 +1,7 @@
 ── tree
 ./All together/Blends/Humans_Master.blend
 ./All together/FBX/Humans_Master.fbx
+./How To Use.txt
 ./Humanoid Rig/All Together/Humans_Master.blend
 ./Humanoid Rig/Individual Characters/Blend/Adventurer.blend
 ./Humanoid Rig/Individual Characters/Blend/Beach.blend
@@ -62,6 +63,7 @@
 ./Separate Skeletal Meshes and Animations/Adventurer/Adventurer_Feet.fbx
 ./Separate Skeletal Meshes and Animations/Adventurer/Adventurer_Head.fbx
 ./Separate Skeletal Meshes and Animations/Adventurer/Adventurer_Legs.fbx
+./Separate Skeletal Meshes and Animations/Animations.fbx
 ./Separate Skeletal Meshes and Animations/Beach/Beach_Body.fbx
 ./Separate Skeletal Meshes and Animations/Beach/Beach_Feet.fbx
 ./Separate Skeletal Meshes and Animations/Beach/Beach_Head.fbx
@@ -79,6 +81,7 @@
 ./Separate Skeletal Meshes and Animations/Farmer/Farmer_Head.fbx
 ./Separate Skeletal Meshes and Animations/Farmer/Farmer_Legs.fbx
 ./Separate Skeletal Meshes and Animations/Horse/Horse_Head.fbx
+./Separate Skeletal Meshes and Animations/Humans_master.blend
 ./Separate Skeletal Meshes and Animations/King/King_Body.fbx
 ./Separate Skeletal Meshes and Animations/King/King_Feet.fbx
 ./Separate Skeletal Meshes and Animations/King/King_Head.fbx
@@ -93,3 +96,15 @@
 ./Separate Skeletal Meshes and Animations/SpaceSuit/SpaceSuit_Legs.fbx
 ./Separate Skeletal Meshes and Animations/Suit/Suit_Body.fbx
 ./Separate Skeletal Meshes and Animations/Suit/Suit_Feet.fbx
+./Separate Skeletal Meshes and Animations/Suit/Suit_Head.fbx
+./Separate Skeletal Meshes and Animations/Suit/Suit_Legs.fbx
+./Separate Skeletal Meshes and Animations/Swat/Swat_Body.fbx
+./Separate Skeletal Meshes and Animations/Swat/Swat_Feet.fbx
+./Separate Skeletal Meshes and Animations/Swat/Swat_Head.fbx
+./Separate Skeletal Meshes and Animations/Swat/Swat_Legs.fbx
+./Separate Skeletal Meshes and Animations/Weapons/Pistol.fbx
+./Separate Skeletal Meshes and Animations/Weapons/Sword.fbx
+./Separate Skeletal Meshes and Animations/Worker/Worker_Body.fbx
+./Separate Skeletal Meshes and Animations/Worker/Worker_Feet.fbx
+./Separate Skeletal Meshes and Animations/Worker/Worker_Head.fbx
+./Separate Skeletal Meshes and Animations/Worker/Worker_Legs.fbx
