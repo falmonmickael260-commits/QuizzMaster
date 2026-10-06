@@ -30,13 +30,14 @@ import pieges from "./pieges";
 import records from "./records";
 import voyages from "./voyages";
 import avances from "./avances";
+import disney from "./disney";
 
 /** Base initiale de BLIND QUIZZ : questions rédigées à la main, chargées au premier démarrage. */
 export const SEED_QUESTIONS: SeedQuestion[] = [
   ...geographie, ...france, ...monde, ...histoire, ...personnages, ...sciences, ...corpsHumain, ...espace,
   ...animaux, ...nature, ...sport, ...football, ...basket, ...tennis, ...automobile, ...cinema, ...series,
   ...musique, ...jeuxVideo, ...technologie, ...cuisine, ...litterature, ...art, ...economie, ...cultureGenerale,
-  ...vieQuotidienne, ...insolite, ...pieges, ...records, ...voyages, ...avances,
+  ...vieQuotidienne, ...insolite, ...pieges, ...records, ...voyages, ...avances, ...disney,
 ];
 
 export type { SeedQuestion };

@@ -21,6 +21,7 @@ export const CATEGORIES: CategoryInfo[] = [
   { id: "tennis", label: "Tennis", emoji: "🎾" },
   { id: "automobile", label: "Automobile", emoji: "🏎️" },
   { id: "cinema", label: "Cinéma", emoji: "🎬" },
+  { id: "disney", label: "Disney", emoji: "🏰" },
   { id: "series", label: "Séries & Télévision", emoji: "📺" },
   { id: "musique", label: "Musique", emoji: "🎵" },
   { id: "jeux-video", label: "Jeux vidéo", emoji: "🎮" },

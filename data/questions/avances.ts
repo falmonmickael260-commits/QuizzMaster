@@ -33,11 +33,6 @@ export default [
     ["Quel astronome a découvert les quatre plus grandes lunes de Jupiter en 1610 ?", "Galilée", ["Johannes Kepler", "Nicolas Copernic", "Tycho Brahe"], "Io, Europe, Ganymède et Callisto sont appelées les « lunes galiléennes ».", 2, ["Galilee", "Galileo", "Galileo Galilei"]],
     ["Quelle sonde spatiale est l'objet humain le plus éloigné de la Terre ?", "Voyager 1", ["Voyager 2", "Pioneer 10", "New Horizons"], "Lancée en 1977, Voyager 1 a quitté l'héliosphère en 2012 et se trouve à plus de 24 milliards de km.", 3, ["Voyager"]],
   ]),
-  ...build("animaux", [
-    ["Quel est le seul mammifère dont la femelle n'a pas de mamelons mais sécrète le lait par la peau ?", "L'ornithorynque", ["Le kangourou", "Le koala", "La chauve-souris"], "Le lait de l'ornithorynque suinte par des pores de la peau du ventre, où les petits le lèchent.", 4, ["ornithorynque", "echidne"]],
-    ["Combien d'estomacs (compartiments) possède une vache ?", "4", ["2", "3", "1"], "La panse (rumen), le bonnet, le feuillet et la caillette : c'est un ruminant.", 2, ["quatre"]],
-    ["Quel animal détient le record de la plus longue migration annuelle ?", "La sterne arctique", ["La baleine à bosse", "Le caribou", "L'albatros hurleur"], "La sterne arctique fait l'aller-retour entre l'Arctique et l'Antarctique, parfois plus de 70 000 km par an.", 3, ["sterne arctique", "sterne"]],
-  ]),
   ...build("cinema", [
     ["Quel film américain a reçu la toute première Palme d'or, créée en 1955 ?", "Marty", ["La Fureur de vivre", "Sept ans de réflexion", "À l'est d'Éden"], "Avant 1955, le Festival de Cannes décernait un « Grand Prix ». Marty, de Delbert Mann, a aussi remporté l'Oscar du meilleur film.", 4],
     ["Quel réalisateur a signé « Le Fabuleux Destin d'Amélie Poulain » ?", "Jean-Pierre Jeunet", ["Luc Besson", "Michel Gondry", "Jacques Audiard"], "Sorti en 2001, le film a fait de Montmartre et du café des Deux Moulins des lieux de pèlerinage.", 2, ["Jeunet"]],
@@ -67,11 +62,6 @@ export default [
     ["En quelle année le premier e-mail a-t-il été envoyé sur le réseau ARPANET ?", "1971", ["1983", "1965", "1991"], "Ray Tomlinson l'a envoyé entre deux ordinateurs placés côte à côte ; il ne se souvient plus de son contenu.", 3],
     ["Que signifie le « G » de « 5G » ?", "Génération", ["Gigabit", "Global", "Gigahertz"], "La 5G est la cinquième génération de standards de téléphonie mobile.", 2, ["generation"]],
     ["Quel mathématicien britannique a conçu une machine pour décrypter Enigma ?", "Alan Turing", ["Charles Babbage", "John von Neumann", "Claude Shannon"], "Sa « Bombe », à Bletchley Park, a raccourci la Seconde Guerre mondiale selon de nombreux historiens.", 2, ["Turing"]],
-  ]),
-  ...build("cuisine", [
-    ["De quelle ville italienne le pesto est-il originaire ?", "Gênes", ["Naples", "Turin", "Bologne"], "Le pesto genovese associe basilic, pignons, ail, parmesan, pecorino et huile d'olive.", 3, ["Genes", "Genova"]],
-    ["Quel fromage italien est traditionnellement utilisé dans la vraie pizza napolitaine ?", "La mozzarella", ["Le parmesan", "Le gorgonzola", "La ricotta"], "La pizza napolitaine utilise de la mozzarella de bufflonne ou du fior di latte.", 1, ["mozzarella"]],
-    ["Combien d'étoiles au maximum le Guide Michelin peut-il attribuer à un restaurant ?", "3", ["5", "4", "2"], "Trois étoiles signifient « une cuisine unique, qui vaut le voyage ».", 1, ["trois"]],
   ]),
   ...build("insolite", [
     ["Quel pays a changé de fuseau horaire en 2011 pour « sauter » le 30 décembre ?", "Les Samoa", ["Les Tonga", "Les Fidji", "Kiribati"], "Pour se caler sur l'Australie et la Nouvelle-Zélande, les Samoa sont passées directement du 29 au 31 décembre 2011.", 4, ["Samoa"]],
