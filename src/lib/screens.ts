@@ -90,7 +90,7 @@ function drawLobby(ctx: Ctx, w: number, h: number, s: PublicRoomState, now: numb
   ctx.fillText(`${s.players.length}/8 candidats sur le plateau — en attente${dots}`, w / 2, h * 0.82);
   ctx.fillStyle = C.dim;
   font(ctx, h * 0.032, "text", 600);
-  ctx.fillText(`${s.settings.rounds} manche${s.settings.rounds > 1 ? "s" : ""} de 5 questions · 12 secondes par question`, w / 2, h * 0.9);
+  ctx.fillText(`${s.settings.rounds} manche${s.settings.rounds > 1 ? "s" : ""} de 5 questions · 15 secondes par question`, w / 2, h * 0.9);
 }
 
 function drawIntro(ctx: Ctx, w: number, h: number, t: number, now: number) {

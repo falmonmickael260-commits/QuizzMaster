@@ -268,16 +268,14 @@ export function CameraDirector({ state, mySeat, override, fixed = false }: { sta
   useFrame((_, dt) => {
     const aspect0 = size.width / size.height;
     if (fixed && !override) {
-      // plan de partie : tout le plateau et tous les candidats, avec un lent mouvement de grue
+      // plan de partie fixe : tout le plateau et tous les candidats ; la caméra ne bouge que pour le gros plan SOLO
       const now = performance.now();
       const count = stateRef.current?.players.length ?? 4;
       const portrait = aspect0 < 0.9;
-      const yaw = Math.sin(now * 0.00011) * 0.07;
-      const elev = (portrait ? 0.64 : 0.34) + Math.sin(now * 0.00007) * 0.025;
       const key = `${count}|${size.width}x${size.height}|${safe.current.top.toFixed(3)}|${safe.current.bottom.toFixed(3)}`;
       const c = fitCache.current;
-      if (!c || c.key !== key || now - c.at > 120) {
-        fitCache.current = { key, at: now, shot: fitShot(framePoints(count), aspect0, portrait ? 52 : 38, elev, yaw, safe.current.top, safe.current.bottom) };
+      if (!c || c.key !== key) {
+        fitCache.current = { key, at: now, shot: fitShot(framePoints(count), aspect0, portrait ? 52 : 38, portrait ? 0.64 : 0.34, 0, safe.current.top, safe.current.bottom) };
       }
       const star = starFocus(stateRef.current, serverNow());
       const shot = star ? starShot(star, aspect0) : fitCache.current!.shot;

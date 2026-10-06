@@ -66,7 +66,7 @@ const FPS_LIMIT = typeof window !== "undefined" ? Number(new URLSearchParams(loc
 // abaissée par paliers si la fluidité baisse, puis passage en qualité légère en dernier recours.
 const MAX_DPR = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 1;
 /** Qualité légère (téléphones) : sans effets, mais assez de pixels pour des contours nets. */
-const LOW_DPR = 1.75;
+const LOW_DPR = 1.5;
 
 export default function Stage({ state, live = false, priv, myId, quality, onQuality, onSelectTarget }: StageProps) {
   useTicker(250);

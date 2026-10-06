@@ -111,8 +111,19 @@ describe("Room — moteur autoritaire", () => {
     expect(last.phase).toBe("question");
     expect(last.question?.text).toBe(""); // annonce : le texte n'est pas encore envoyé
     expect(() => room.handle(a.id, { t: "mode", mode: "4" })).toThrow(/pas encore/);
-    await vi.advanceTimersByTimeAsync(TIMINGS.questionAnnounceMs + 12_500);
+    await vi.advanceTimersByTimeAsync(TIMINGS.questionAnnounceMs + TIMINGS.questionMs + 500);
     expect(() => room.handle(a.id, { t: "mode", mode: "4" })).toThrow();
+  });
+
+  it("accepte une réponse SOLO tapée directement, sans choisir l'aide avant", async () => {
+    const [a, b] = await setup(2);
+    await toQuestion();
+    const q = (room as unknown as { questions: Question[] }).questions[0];
+    room.handle(a.id, { t: "answer", value: q.correctAnswer, solo: true });
+    expect(() => room.handle(b.id, { t: "answer", value: q.correctAnswer })).toThrow(/aide/);
+    const me = last.players.find((p) => p.id === a.id)!;
+    expect(me.mode).toBe("solo");
+    expect(me.answered).toBe(true);
   });
 
   it("termine la question en avance quand tout le monde a répondu", async () => {

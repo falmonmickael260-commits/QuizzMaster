@@ -209,7 +209,8 @@ export type ClientMessage =
   | { t: "start" }
   | { t: "settings"; rounds: number }
   | { t: "mode"; mode: AnswerMode }
-  | { t: "answer"; value: string }
+  /** solo : réponse écrite directement, sans avoir choisi l'aide avant (choisit SOLO automatiquement). */
+  | { t: "answer"; value: string; solo?: boolean }
   | { t: "spin" }
   | { t: "target"; playerId: string }
   | { t: "restart" }
