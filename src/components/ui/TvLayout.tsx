@@ -139,14 +139,14 @@ function usePending(resetKey: string) {
 
 // ─── Panneau d'aide 2 / 4 / SOLO (droite) ────────────────────────────────────
 
-function ModeButtons({ variant }: { variant: "side" | "inline" }) {
+function ModeButtons({ variant, only }: { variant: "side" | "inline"; only?: AnswerMode[] }) {
   const { priv, chooseMode, canAct, q } = useAnswering();
   const [pending, setPending] = usePending(`${q?.index}|${priv?.mode}|${priv?.answered}`);
   const chosen = priv?.mode ?? (pending?.startsWith("mode:") ? (pending.slice(5) as AnswerMode) : null);
   const selectable = canAct && !priv?.mode && !pending;
   return (
     <div className={`tv-modes ${variant}`}>
-      {MODE_ORDER.map((m, i) => {
+      {MODE_ORDER.filter((m) => !only || only.includes(m)).map((m, i) => {
         const info = MODE_LABELS[m];
         const state = chosen === m ? "chosen" : chosen ? "off" : selectable ? "ready" : "idle";
         return (
@@ -226,10 +226,10 @@ export function QuestionPanel() {
   }, [priv?.mode, priv?.answered]);
 
   const pickAnswer = useCallback(
-    (v: string) => {
+    (v: string, solo = false) => {
       if (pendingStore.value) return;
       setPending(`answer:${v}`);
-      answer(v);
+      answer(v, solo);
     },
     [answer, setPending],
   );
@@ -298,14 +298,30 @@ export function QuestionPanel() {
     </div>
   );
 
+  const soloForm = (direct: boolean) => (
+    <form
+      className="tv-solo"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (solo.trim()) pickAnswer(solo.trim(), direct);
+      }}
+    >
+      <input ref={inputRef} placeholder={direct ? "SOLO : écrivez directement votre réponse…" : "Écrivez votre réponse…"} value={solo} onChange={(e) => setSolo(e.target.value)} maxLength={60} autoComplete="off" autoCorrect="off" enterKeyHint="send" disabled={!canAct} />
+      <button type="submit" disabled={!canAct || !solo.trim() || !!pending}>
+        {pending ? "Envoi…" : `SOLO · ${MODE_POINTS.solo}`}
+      </button>
+    </form>
+  );
+
   if (state.phase === "question" && q && !q.text) {
     status = <div className="tv-status">Question {q.inRound + 1} · préparez-vous…</div>;
   } else if (state.phase === "question" && q) {
     if (!priv?.mode && !expired) {
       area = (
         <>
-          <div className="tv-hint">Choisissez votre aide : 2 réponses, 4 réponses ou SOLO</div>
-          <ModeButtons variant="inline" />
+          <div className="tv-hint">Écrivez votre réponse (SOLO) ou demandez 2 ou 4 propositions</div>
+          {soloForm(true)}
+          <ModeButtons variant="inline" only={["2", "4"]} />
         </>
       );
     } else if (priv?.mode === "solo") {
@@ -317,18 +333,7 @@ export function QuestionPanel() {
           </div>
         </div>
       ) : (
-        <form
-          className="tv-solo"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (solo.trim()) pickAnswer(solo.trim());
-          }}
-        >
-          <input ref={inputRef} placeholder="Écrivez votre réponse…" value={solo} onChange={(e) => setSolo(e.target.value)} maxLength={60} autoComplete="off" enterKeyHint="send" disabled={!canAct} />
-          <button type="submit" disabled={!canAct || !solo.trim() || !!pending}>
-            {pending ? "Envoi…" : `Valider · ${MODE_POINTS.solo}`}
-          </button>
-        </form>
+        soloForm(false)
       );
     } else if (options.length) {
       area = optionGrid(options);

@@ -171,7 +171,7 @@ export function Home() {
 
         <div className="menu-card menu-tagline">
           <b>Le jeu télévisé où vous choisissez votre aide !</b>
-          <span>12 secondes par question, jusqu&apos;à 8 candidats sur le plateau, une roue qui peut tout renverser.</span>
+          <span>15 secondes par question, jusqu&apos;à 8 candidats sur le plateau, une roue qui peut tout renverser.</span>
         </div>
 
         <div className="menu-modes">

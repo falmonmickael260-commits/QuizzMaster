@@ -33,7 +33,7 @@ const SCHEMA = {
 };
 
 const SYSTEM = `Tu es l'auteur des questions de BLIND QUIZZ, un jeu télévisé français de culture générale.
-Chaque question se joue en 12 secondes selon trois niveaux d'aide : 2 propositions (50 pts), 4 propositions (100 pts) ou réponse libre SOLO (200 pts).
+Chaque question se joue en 15 secondes selon trois niveaux d'aide : 2 propositions (50 pts), 4 propositions (100 pts) ou réponse libre SOLO (200 pts).
 Exigences de qualité :
 - Faits exacts et vérifiables, une seule réponse correcte sans ambiguïté.
 - Formulation courte, naturelle, lisible en quelques secondes (max ~110 caractères).

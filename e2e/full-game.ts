@@ -122,8 +122,8 @@ type Plan = { mode: "4" | "2" | "solo" | null; correct: boolean };
 async function playInBrowser(page: Page, plan: Plan, s: PublicRoomState) {
   if (!plan.mode) return;
   const seed = answers.get(s.question!.text)!;
-  const idx = { "2": 0, "4": 1, solo: 2 }[plan.mode]; // ordre des boutons : 2 · 4 · SOLO
-  await page.locator(".tv-mode:visible").nth(idx).click({ timeout: 8000, force: true });
+  // SOLO : réponse tapée directement dans le champ, sans bouton d'aide ; 2 / 4 : boutons du panneau
+  if (plan.mode !== "solo") await page.locator(`.tv-panel .tv-mode:visible`).nth(plan.mode === "2" ? 0 : 1).click({ timeout: 8000, force: true });
   if (plan.mode === "solo") {
     const input = page.locator(".tv-solo input");
     await input.waitFor({ timeout: 8000 });

@@ -31,7 +31,7 @@ interface GameStore {
   start: () => void;
   setRounds: (rounds: number) => void;
   chooseMode: (mode: AnswerMode) => void;
-  answer: (value: string) => void;
+  answer: (value: string, solo?: boolean) => void;
   spin: () => void;
   target: (playerId: string) => void;
   restart: () => void;
@@ -169,7 +169,7 @@ export const useGame = create<GameStore>((set, get) => ({
   start: () => get().send({ t: "start" }),
   setRounds: (rounds) => get().send({ t: "settings", rounds }),
   chooseMode: (mode) => get().send({ t: "mode", mode }),
-  answer: (value) => get().send({ t: "answer", value }),
+  answer: (value, solo) => get().send(solo ? { t: "answer", value, solo: true } : { t: "answer", value }),
   spin: () => get().send({ t: "spin" }),
   target: (playerId) => get().send({ t: "target", playerId }),
   restart: () => get().send({ t: "restart" }),

@@ -2840,3 +2840,11 @@ button.tv-badge {
   border-radius: 50%;
   border: 2px solid #0b1030;
 }
+
+/* aide en ligne : seulement 2 et 4 propositions (le SOLO se tape directement dans le champ) */
+.tv-modes.inline {
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+}
+.tv-panel .tv-solo + .tv-modes.inline {
+  margin-top: 8px;
+}

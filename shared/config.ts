@@ -26,9 +26,9 @@ export const MAX_ROUNDS = MAX_QUESTIONS / QUESTIONS_PER_ROUND; // 6
 export const DEFAULT_ROUNDS = 3;
 export const MAX_PLAYERS = 8;
 
-/** Durées des phases (ms). Les 12 secondes englobent réflexion + choix de l'aide + réponse. */
+/** Durées des phases (ms). Les 15 secondes englobent réflexion + choix de l'aide + réponse. */
 export const TIMINGS = {
-  questionMs: 12_000,
+  questionMs: 15_000,
   introMs: 6_500,
   /** Annonce de la question par l'animateur avant que le chrono ne démarre. */
   questionAnnounceMs: 2_500,

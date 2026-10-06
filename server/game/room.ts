@@ -259,6 +259,8 @@ export class Room {
       case "mode":
         return this.chooseMode(p, msg.mode);
       case "answer":
+        // réponse écrite directement : l'aide SOLO est choisie au passage
+        if (msg.solo === true && !p.mode) this.chooseMode(p, "solo");
         return this.submitAnswer(p, msg.value);
       case "spin":
         return this.spin(playerId);
