@@ -40,9 +40,18 @@ export class FileQuestionStore implements QuestionStore {
       data.questions.forEach((q) => this.questions.set(q.id, q));
       data.deletedSeedIds?.forEach((id) => this.deletedSeedIds.add(id));
     }
+    // Retire les questions de la base initiale qui n'en font plus partie (séries renouvelées).
+    const seedIds = new Set(SEED_QUESTIONS.map((s) => s.id));
+    let removed = 0;
+    for (const [id, q] of this.questions) {
+      if (q.source === "seed" && !seedIds.has(id)) {
+        this.questions.delete(id);
+        removed++;
+      }
+    }
     // Ajoute les questions de la base initiale qui ne sont pas encore présentes.
     const now = new Date().toISOString();
-    let added = 0;
+    let added = removed;
     for (const s of SEED_QUESTIONS) {
       if (this.questions.has(s.id) || this.deletedSeedIds.has(s.id)) continue;
       this.questions.set(s.id, { ...s, status: "published", source: "seed", createdAt: now, updatedAt: now, stats: emptyStats() });
