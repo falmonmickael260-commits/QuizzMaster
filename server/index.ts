@@ -8,7 +8,7 @@ import { createQuestionStore } from "./store";
 import { RoomManager } from "./game/rooms";
 import { createAdminHandler } from "./admin/api";
 import { TIMINGS } from "../shared/config";
-import { SECURITY_HEADERS, clientIp } from "./limits";
+import { securityHeaders, clientIp } from "./limits";
 
 /** Connexions temps réel simultanées acceptées par adresse IP (plusieurs onglets, une famille derrière la même box…). */
 const MAX_WS_PER_IP = 40;
@@ -37,7 +37,7 @@ async function main() {
   const admin = createAdminHandler(store);
 
   const server = http.createServer(async (req, res) => {
-    for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.setHeader(k, v);
+    for (const [k, v] of Object.entries(securityHeaders())) res.setHeader(k, v);
     if (!dev) res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
     const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
     if (url.pathname === "/api/health") {

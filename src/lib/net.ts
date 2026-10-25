@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import type { AnswerMode } from "@shared/config";
 import type { ClientMessage, PrivateState, PublicRoomState, ServerMessage } from "@shared/types";
+import { getIncomingPlatformToken } from "./platformToken";
 
 const SESSION_KEY = "bq-session";
 
@@ -160,11 +161,11 @@ export const useGame = create<GameStore>((set, get) => ({
 
   create(name, character, rounds) {
     saveSession(null);
-    get().send({ t: "create", name, character, rounds });
+    get().send({ t: "create", name, character, rounds, rgToken: getIncomingPlatformToken() ?? undefined });
   },
   join(code, name, character) {
     saveSession(null);
-    get().send({ t: "join", code, name, character });
+    get().send({ t: "join", code, name, character, rgToken: getIncomingPlatformToken() ?? undefined });
   },
   start: () => get().send({ t: "start" }),
   setRounds: (rounds) => get().send({ t: "settings", rounds }),
@@ -179,7 +180,7 @@ export const useGame = create<GameStore>((set, get) => ({
   startDemo(name, character, rounds, bots = 3) {
     saveSession(null);
     afterWelcome = [{ t: "addBots", count: bots }, { t: "autopilot", on: true }, { t: "start" }];
-    get().send({ t: "create", name, character, rounds });
+    get().send({ t: "create", name, character, rounds, rgToken: getIncomingPlatformToken() ?? undefined });
   },
   leave() {
     get().send({ t: "leave" });

@@ -34,6 +34,7 @@ import type {
 import { WHEEL_SEGMENTS, type WheelSegment } from "../../shared/wheel";
 import { isAnswerCorrect } from "./answer";
 import { selectQuestions, shuffle } from "./selection";
+import { isPlatformReportingEnabled, reportMatchResult, type PlatformPlayer } from "../platform";
 
 export interface QuestionSource {
   getPlayablePool(): Promise<Question[]>;
@@ -81,6 +82,8 @@ interface ServerPlayer {
   bot: boolean;
   /** Le serveur joue à la place de ce joueur humain. */
   autopilot: boolean;
+  /** Identifiant du compte Revanche Game, ou `null` pour un invité. */
+  platformUserId: string | null;
 }
 
 /** Candidats simulés pour les parties de démonstration. */
@@ -145,7 +148,11 @@ export class Room {
 
   // ─── Joueurs ───────────────────────────────────────────────────────────────
 
-  addPlayer(name: string, character: string, opts: { bot?: boolean } = {}): ServerPlayer {
+  addPlayer(
+    name: string,
+    character: string,
+    opts: { bot?: boolean; platformUserId?: string | null } = {},
+  ): ServerPlayer {
     if (this.phase !== "lobby") throw new GameError("La partie a déjà commencé.", "started");
     if (this.players.size >= MAX_PLAYERS) throw new GameError("Le plateau est complet (8 candidats maximum).", "full");
     const usedSeats = new Set([...this.players.values()].map((p) => p.seat));
@@ -178,6 +185,7 @@ export class Room {
       deadline: null,
       bot: !!opts.bot,
       autopilot: false,
+      platformUserId: opts.platformUserId ?? null,
     };
     this.players.set(p.id, p);
     if (!this.hostId && !p.bot) this.hostId = p.id;
@@ -744,6 +752,30 @@ export class Room {
     const winner = this.ranking[0];
     if (winner) this.pushEvent("winner", winner.playerId);
     this.setPhase("final", null, null);
+    this.reportToPlatform();
+  }
+
+  /**
+   * Déclare le résultat réel à la plateforme centrale — une seule fois par
+   * partie (clé d'idempotence horodatée ici, jamais recalculée après coup,
+   * donc stable même en cas de retry réseau côté `platform.ts`).
+   * `rank === 1` couvre les ex æquo : tout le monde en tête gagne.
+   */
+  private reportToPlatform() {
+    if (!isPlatformReportingEnabled()) return;
+    const finishedAt = Date.now();
+    const players: PlatformPlayer[] = this.ranking.map((entry) => {
+      const p = this.players.get(entry.playerId);
+      const platformUserId = p?.platformUserId ?? null;
+      return {
+        user_id: platformUserId,
+        guest_label: platformUserId ? null : (p?.name ?? "Candidat"),
+        outcome: entry.rank === 1 ? "win" : "loss",
+        score: entry.score,
+        position: entry.rank,
+      };
+    });
+    reportMatchResult({ roomCode: this.code, finishedAt, players });
   }
 
   private restart(playerId: string) {

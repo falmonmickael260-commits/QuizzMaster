@@ -5,6 +5,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { CHARACTER_MODELS, OUTFIT_COLORS, encodeModel, isValidCharacter, modelOf } from "@shared/characters";
+import { getIncomingPlatformToken, peekPlatformUsername } from "@/lib/platformToken";
 import { DEFAULT_ROUNDS, MAX_ROUNDS } from "@shared/config";
 import { useGame } from "@/lib/net";
 import { audio } from "@/lib/audio";
@@ -58,8 +59,13 @@ export function Home() {
   const [busy, setBusy] = useState(false);
   const [settings, setSettings] = useState(false);
   const [muted, setMuted] = useState(audio.muted);
+  const [platformUsername, setPlatformUsername] = useState<string | null>(null);
   const codeRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setPlatformUsername(peekPlatformUsername(getIncomingPlatformToken()));
+  }, []);
 
   useEffect(() => {
     try {
@@ -244,6 +250,15 @@ export function Home() {
                 ))}
               </div>
             </div>
+            {platformUsername && (
+              <div
+                className="menu-box"
+                style={{ textAlign: "center", fontSize: "0.8em", opacity: 0.85 }}
+              >
+                Connecté en tant que <strong>{platformUsername}</strong> — vos résultats
+                compteront dans vos statistiques Revanche Game.
+              </div>
+            )}
             <div className="menu-box">
               <h3>
                 <label htmlFor="pseudo">Votre pseudo</label>

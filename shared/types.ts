@@ -203,8 +203,8 @@ export interface PrivateState {
 // ─── Messages réseau ─────────────────────────────────────────────────────────
 
 export type ClientMessage =
-  | { t: "create"; name: string; character: string; rounds?: number }
-  | { t: "join"; code: string; name: string; character: string }
+  | { t: "create"; name: string; character: string; rounds?: number; rgToken?: string }
+  | { t: "join"; code: string; name: string; character: string; rgToken?: string }
   | { t: "resume"; code: string; token: string }
   | { t: "start" }
   | { t: "settings"; rounds: number }

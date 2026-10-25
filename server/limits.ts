@@ -48,12 +48,30 @@ export function clientIp(req: IncomingMessage): string {
   return first || req.socket.remoteAddress || "?";
 }
 
-/** En-têtes de sécurité ajoutés à toutes les réponses HTTP. */
-export const SECURITY_HEADERS: Record<string, string> = {
-  "X-Content-Type-Options": "nosniff",
-  "Referrer-Policy": "strict-origin-when-cross-origin",
-  "X-Frame-Options": "SAMEORIGIN",
-  "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
-  "Content-Security-Policy": "frame-ancestors 'self'; base-uri 'self'; object-src 'none'; form-action 'self'",
-  "Cross-Origin-Opener-Policy": "same-origin",
-};
+/**
+ * En-têtes de sécurité ajoutés à toutes les réponses HTTP.
+ *
+ * `PLATFORM_SHELL_ORIGIN` autorise explicitement la coquille Revanche Game à
+ * afficher ce jeu dans une iframe (ex. "http://localhost:3001" en
+ * développement, l'adresse réelle de la plateforme en production) — sans
+ * cette variable, le comportement par défaut (aucun cadrage externe) est
+ * inchangé. Les navigateurs modernes appliquent `frame-ancestors` (CSP) et
+ * ignorent `X-Frame-Options` dès que l'un des deux autorise le cadrage ;
+ * on retire donc `X-Frame-Options` plutôt que de le contredire.
+ */
+// Fonction, pas une constante : `.env.local` n'est chargé par `loadEnvConfig`
+// qu'au tout début de `main()`, après que ce module a déjà fini de
+// s'évaluer — lire `process.env` ici au chargement verrait toujours la
+// variable absente. En la lisant à chaque appel (une par requête), on a la
+// bonne valeur une fois l'environnement réellement chargé.
+export function securityHeaders(): Record<string, string> {
+  const shellOrigin = process.env.PLATFORM_SHELL_ORIGIN;
+  return {
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    ...(shellOrigin ? {} : { "X-Frame-Options": "SAMEORIGIN" }),
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
+    "Content-Security-Policy": `frame-ancestors 'self'${shellOrigin ? ` ${shellOrigin}` : ""}; base-uri 'self'; object-src 'none'; form-action 'self'`,
+    "Cross-Origin-Opener-Policy": "same-origin",
+  };
+}

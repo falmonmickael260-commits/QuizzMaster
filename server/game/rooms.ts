@@ -3,6 +3,7 @@ import type { ClientMessage, ServerMessage } from "../../shared/types";
 import { GameError, Room, type QuestionSource, type RoomTimings } from "./room";
 import { TIMINGS } from "../../shared/config";
 import { TokenBucket, WindowCounter } from "../limits";
+import { verifyPlatformToken } from "../platform-token";
 
 /** Plafond de parties simultanées sur le serveur (protège la mémoire). */
 const MAX_ROOMS = 400;
@@ -121,7 +122,8 @@ export class RoomManager {
         this.creations.hit(conn.ip);
         this.detach(conn);
         const room = this.createRoom();
-        const p = room.addPlayer(msg.name, msg.character);
+        const identity = verifyPlatformToken(msg.rgToken);
+        const p = room.addPlayer(msg.name, msg.character, { platformUserId: identity?.uid ?? null });
         if (msg.rounds) room.handle(p.id, { t: "settings", rounds: msg.rounds });
         return this.welcome(conn, room, p.id, p.token);
       }
@@ -130,7 +132,8 @@ export class RoomManager {
         const room = this.rooms.get(code);
         if (!room) throw new GameError(`Aucune partie ne porte le code ${code}.`, "no_room");
         this.detach(conn);
-        const p = room.addPlayer(msg.name, msg.character);
+        const identity = verifyPlatformToken(msg.rgToken);
+        const p = room.addPlayer(msg.name, msg.character, { platformUserId: identity?.uid ?? null });
         return this.welcome(conn, room, p.id, p.token);
       }
       case "resume": {
