@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState } from "react";
 import { CHARACTER_MODELS, OUTFIT_COLORS, encodeModel, isValidCharacter, modelOf } from "@shared/characters";
 import { getIncomingPlatformToken, peekPlatformUsername } from "@/lib/platformToken";
+import { clearIncomingRoomCode, getIncomingRoomCode } from "@/lib/platformRoom";
 import { DEFAULT_ROUNDS, MAX_ROUNDS } from "@shared/config";
 import { useGame } from "@/lib/net";
 import { audio } from "@/lib/audio";
@@ -68,13 +69,23 @@ export function Home() {
   }, []);
 
   useEffect(() => {
+    let resolvedName = "";
+    // Valeur de secours (le tirage aléatoire du `useState` initial) tant que
+    // le profil local n'a pas été lu — la même qui finira dans `character` par
+    // `setCharacter` ci-dessous, mais disponible tout de suite pour l'auto-
+    // rejoint plus bas, sans attendre un second rendu.
+    let resolvedCharacter = character;
     try {
       const p = JSON.parse(localStorage.getItem(PROFILE_KEY) || "null");
-      if (p?.name) setName(p.name);
+      if (p?.name) {
+        resolvedName = p.name;
+        setName(p.name);
+      }
       // les anciens profils (personnages ronds) sont convertis vers le modèle 3D correspondant
       if (isValidCharacter(p?.character)) {
         const m = modelOf(p.character);
-        setCharacter(encodeModel(m.model, m.color));
+        resolvedCharacter = encodeModel(m.model, m.color);
+        setCharacter(resolvedCharacter);
       }
     } catch {
       /* ignore */
@@ -89,6 +100,21 @@ export function Home() {
     }
     const room = params.get("room");
     if (room) setCode(room.replace(/[^0-9]/g, "").slice(0, 4));
+
+    // Invitation Revanche Games acceptée : le code de salle arrive en
+    // `rg_room` plutôt qu'en `room` (voir platformRoom.ts). Avec un
+    // pseudonyme de profil déjà connu, on rejoint directement, sans faire
+    // retaper le code — sans pseudonyme utilisable (premier lancement sur cet
+    // appareil), le champ reste pré-rempli, à un clic de « Rejoindre ».
+    const invitedRoom = getIncomingRoomCode();
+    if (invitedRoom) {
+      setCode(invitedRoom);
+      if (resolvedName.trim().length >= 2) {
+        clearIncomingRoomCode();
+        setBusy(true);
+        join(invitedRoom, resolvedName.trim(), resolvedCharacter);
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
