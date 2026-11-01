@@ -6,6 +6,7 @@ import next from "next";
 import { WebSocketServer } from "ws";
 import { createQuestionStore } from "./store";
 import { RoomManager } from "./game/rooms";
+import { nodeConnector } from '../platform-connector/server.mjs';
 import { createAdminHandler } from "./admin/api";
 import { TIMINGS } from "../shared/config";
 import { securityHeaders, clientIp } from "./limits";
@@ -37,6 +38,7 @@ async function main() {
   const admin = createAdminHandler(store);
 
   const server = http.createServer(async (req, res) => {
+    if (await nodeConnector(req, res, 'quiz-master', rooms.platformConnector())) return;
     for (const [k, v] of Object.entries(securityHeaders())) res.setHeader(k, v);
     if (!dev) res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
     const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);

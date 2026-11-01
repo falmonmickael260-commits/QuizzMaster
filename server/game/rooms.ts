@@ -4,6 +4,7 @@ import { GameError, Room, type QuestionSource, type RoomTimings } from "./room";
 import { TIMINGS } from "../../shared/config";
 import { TokenBucket, WindowCounter } from "../limits";
 import { verifyPlatformToken } from "../platform-token";
+import type { Adapter } from '../../platform-connector/server.mjs';
 
 /** Plafond de parties simultanées sur le serveur (protège la mémoire). */
 const MAX_ROOMS = 400;
@@ -22,6 +23,10 @@ interface Conn {
 
 /** Gestion des rooms et du transport temps réel (WebSocket) — le serveur est la source de vérité. */
 export class RoomManager {
+  platformConnector(): Adapter {
+    const room = (code: string) => { const r = this.rooms.get(code); if (!r) throw new Error('Salon introuvable.'); return r; };
+    return { inspect: c => room(c.room).platformSnapshot(c), admit: c => room(c.room).platformAdmit(c) };
+  }
   private rooms = new Map<string, Room>();
   private conns = new Set<Conn>();
   private sweepTimer: ReturnType<typeof setInterval>;

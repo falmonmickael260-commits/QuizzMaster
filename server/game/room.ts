@@ -35,6 +35,7 @@ import { WHEEL_SEGMENTS, type WheelSegment } from "../../shared/wheel";
 import { isAnswerCorrect } from "./answer";
 import { selectQuestions, shuffle } from "./selection";
 import { isPlatformReportingEnabled, reportMatchResult, type PlatformPlayer } from "../platform";
+import type { Command, Snapshot, Session } from '../../platform-connector/server.mjs';
 
 export interface QuestionSource {
   getPlayablePool(): Promise<Question[]>;
@@ -108,6 +109,22 @@ export function sanitizeName(name: string): string {
 }
 
 export class Room {
+  platformSnapshot(c: Command): Snapshot {
+    const p = [...this.players.values()].find(p => p.token === c.proof.token);
+    const expected = c.inviter || c.uid;
+    if (!p || (p.platformUserId && expected && p.platformUserId !== expected)) throw new Error('Votre ami ne se trouve plus dans ce salon.');
+    if (!p.platformUserId && expected) p.platformUserId = expected;
+    return { code: this.code, instance: `${this.code}:${this.createdAt}`, capacity: MAX_PLAYERS, count: this.players.size, status: this.phase === 'lobby' ? 'open' : 'started', ownerUid: p.platformUserId };
+  }
+
+  platformAdmit(c: Command): Session {
+    this.platformSnapshot(c);
+    if (`${this.code}:${this.createdAt}` !== c.instance) throw new Error('Salon remplacé.');
+    const existing = [...this.players.values()].find(p => p.platformUserId === c.uid);
+    const p = existing || this.addPlayer(c.name, 'nova', { platformUserId: c.uid });
+    return { code: this.code, token: p.token, playerId: p.id };
+  }
+
   readonly code: string;
   readonly createdAt = Date.now();
   lastActivity = Date.now();

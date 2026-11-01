@@ -4,6 +4,7 @@ import { create } from "zustand";
 import type { AnswerMode } from "@shared/config";
 import type { ClientMessage, PrivateState, PublicRoomState, ServerMessage } from "@shared/types";
 import { getIncomingPlatformToken } from "./platformToken";
+import { connectPlatform } from '../../platform-connector/browser.js';
 
 const SESSION_KEY = "bq-session";
 
@@ -194,6 +195,18 @@ export const useGame = create<GameStore>((set, get) => ({
     setTimeout(() => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })), 3800);
   },
 }));
+
+if (typeof window !== 'undefined') {
+  connectPlatform({ game: 'quiz-master', session: loadSession, adopt: async session => {
+    if (!session.token) throw new Error('Session invalide.');
+    saveSession({ code: session.code, token: session.token });
+    pending = [];
+    useGame.getState().send({ t: 'resume', code: session.code, token: session.token });
+  } });
+  useGame.subscribe((value, previous) => {
+    if (value.state?.code !== previous.state?.code) window.dispatchEvent(new Event('rg:session'));
+  });
+}
 
 // Accès au store pour les tests automatisés (l'état exposé est déjà public).
 if (typeof window !== "undefined") (window as unknown as { __BQ: typeof useGame }).__BQ = useGame;
