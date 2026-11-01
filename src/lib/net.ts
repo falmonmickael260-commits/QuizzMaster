@@ -53,17 +53,20 @@ let toastSeq = 0;
 let pending: ClientMessage[] = [];
 /** Messages à envoyer dès que la room est créée (partie de démonstration). */
 let afterWelcome: ClientMessage[] = [];
+let memorySession: Session | null | undefined;
 
 function loadSession(): Session | null {
+  if (memorySession !== undefined) return memorySession;
   try {
     const raw = sessionStorage.getItem(SESSION_KEY) ?? localStorage.getItem(SESSION_KEY);
-    return raw ? (JSON.parse(raw) as Session) : null;
+    return memorySession = raw ? (JSON.parse(raw) as Session) : null;
   } catch {
-    return null;
+    return memorySession = null;
   }
 }
 
 function saveSession(s: Session | null) {
+  memorySession = s;
   try {
     if (s) {
       sessionStorage.setItem(SESSION_KEY, JSON.stringify(s));
