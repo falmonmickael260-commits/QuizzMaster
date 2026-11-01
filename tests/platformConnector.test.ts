@@ -13,7 +13,9 @@ it('invitation : identité, capacité réelle, reprise et invités conservés', 
     const b = room.platformAdmit(c);
     expect(room.platformAdmit(c)).toEqual(b);
     expect(room.resume(b.token!).platformUserId).toBe(bob);
-    for (let i = 0; i < 6; i++) room.addPlayer(`Invité ${i}`, 'nova');
+    let anonymous;
+    for (let i = 0; i < 6; i++) anonymous = room.addPlayer(`Invité ${i}`, 'nova');
+    expect(() => room.platformSnapshot({ ...c, uid: bob, inviter: undefined, proof: { code: room.code, token: anonymous!.token } })).toThrow(/déjà une place/);
     expect(() => room.platformAdmit({ ...c, uid: randomUUID() })).toThrow(/complet/);
     expect(() => room.platformSnapshot({ ...c, proof: { code: room.code, token: 'forged' } })).toThrow();
     expect(() => room.platformAdmit({ ...c, instance: 'old' })).toThrow();

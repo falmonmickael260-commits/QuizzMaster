@@ -113,7 +113,10 @@ export class Room {
     const p = [...this.players.values()].find(p => p.token === c.proof.token);
     const expected = c.inviter || c.uid;
     if (!p || (p.platformUserId && expected && p.platformUserId !== expected)) throw new Error('Votre ami ne se trouve plus dans ce salon.');
-    if (!p.platformUserId && expected) p.platformUserId = expected;
+    if (!p.platformUserId && expected) {
+      if ([...this.players.values()].some(other => other.id !== p.id && other.platformUserId === expected)) throw new Error('Ce compte possède déjà une place dans le salon.');
+      p.platformUserId = expected;
+    }
     return { code: this.code, instance: `${this.code}:${this.createdAt}`, capacity: MAX_PLAYERS, count: this.players.size, status: this.phase === 'lobby' ? 'open' : 'started', ownerUid: p.platformUserId };
   }
 
