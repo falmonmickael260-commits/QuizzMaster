@@ -117,7 +117,7 @@ export class Room {
       if ([...this.players.values()].some(other => other.id !== p.id && other.platformUserId === expected)) throw new Error('Ce compte possède déjà une place dans le salon.');
       p.platformUserId = expected;
     }
-    return { code: this.code, instance: `${this.code}:${this.createdAt}`, capacity: MAX_PLAYERS, count: this.players.size, status: this.phase === 'lobby' ? 'open' : 'started', ownerUid: p.platformUserId };
+    return { code: this.code, instance: `${this.code}:${this.createdAt}`, capacity: MAX_PLAYERS, count: this.players.size, status: this.phase === 'lobby' ? 'open' : 'started', ownerUid: p.platformUserId, isHost: p.id === this.hostId && p.connected };
   }
 
   platformAdmit(c: Command): Session {
