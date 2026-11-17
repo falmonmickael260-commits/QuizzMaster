@@ -21,3 +21,14 @@ it('invitation : identité, capacité réelle, reprise et invités conservés', 
     expect(() => room.platformAdmit({ ...c, instance: 'old' })).toThrow();
   } finally { room.dispose(); }
 });
+
+it('vue publique : aucune option privée, réponse cachée, jeton ou nouvelle place',()=>{
+  const room=new Room('BQ-ADMIN',{getPlayablePool:async()=>[],recordUsage:async()=>{},recordAnswers:async()=>{}});
+  try{
+    const player=room.addPlayer('Alice','nova');const count=room.publicState().players.length;
+    const snapshot=room.publicState();
+    expect(snapshot.players).toHaveLength(count);expect(JSON.stringify(snapshot)).not.toContain(player.token);
+    expect('privateState' in snapshot).toBe(false);expect('options' in snapshot).toBe(false);
+    expect(room.publicState().players).toHaveLength(count);
+  }finally{room.dispose();}
+});

@@ -1,3 +1,4 @@
+import { nodeObserver } from '../admin-observer/server.mjs';
 // Serveur BLIND QUIZZ : Next.js (interface) + WebSocket (jeu temps réel autoritaire) + API admin, sur un seul port.
 
 import http from "node:http";
@@ -38,6 +39,7 @@ async function main() {
   const admin = createAdminHandler(store);
 
   const server = http.createServer(async (req, res) => {
+    if (await nodeObserver(req,res,'quiz-master',(code,instance)=>rooms.adminSnapshot(code,instance))) return;
     if (await nodeConnector(req, res, 'quiz-master', rooms.platformConnector())) return;
     for (const [k, v] of Object.entries(securityHeaders())) res.setHeader(k, v);
     if (!dev) res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
