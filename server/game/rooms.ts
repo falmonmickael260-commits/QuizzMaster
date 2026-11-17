@@ -23,6 +23,10 @@ interface Conn {
 
 /** Gestion des rooms et du transport temps réel (WebSocket) — le serveur est la source de vérité. */
 export class RoomManager {
+  adminSnapshot(code:string,instance:string) {
+    const room=this.rooms.get(code);
+    return room && `${room.code}:${room.createdAt}`===instance ? room.publicState() : null;
+  }
   platformConnector(): Adapter {
     const room = (code: string) => { const r = this.rooms.get(code); if (!r) throw new Error('Salon introuvable.'); return r; };
     return { inspect: c => room(c.room).platformSnapshot(c), admit: c => room(c.room).platformAdmit(c) };
